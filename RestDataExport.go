@@ -6,6 +6,7 @@ import (
 	util "IEdgeInsights/common/util"
 	msgbusutil "IEdgeInsights/common/util/msgbusutil"
 	"bytes"
+	"crypto/md5"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -21,13 +22,140 @@ import (
 	"github.com/golang/glog"
 )
 
+type restExport struct {
+	rdeCaCertPool  *x509.CertPool
+	extCaCertPool  *x509.CertPool
+	clientCert     tls.Certificate
+	rdeConfig      map[string]interface{}
+	imgStoreConfig map[string]interface{}
+	host           string
+	port           string
+	devMode        bool
+}
+
 const (
-	rdeCaPath   = "/opt/intel/eis/ca_cert.der"
 	rdeCertPath = "/opt/intel/eis/rde_server_cert.der"
 	rdeKeyPath  = "/opt/intel/eis/rde_server_key.der"
 )
 
-func startEisSubscriber(config map[string]interface{}, topic string, rdeConfig map[string]interface{}, devMode bool) {
+// init is used to initialize and fetch required config
+func (r *restExport) init() {
+
+	flag.Parse()
+	flag.Set("logtostderr", "true")
+	defer glog.Flush()
+
+	appName := os.Getenv("AppName")
+	config := util.GetCryptoMap(appName)
+	confHandler := configmgr.Init("etcd", config)
+
+	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
+	flag.Set("v", os.Getenv("GO_VERBOSE"))
+
+	// Setting devMode
+	devMode, err := strconv.ParseBool(os.Getenv("DEV_MODE"))
+	if err != nil {
+		glog.Errorf("string to bool conversion error")
+		os.Exit(1)
+	}
+	r.devMode = devMode
+
+	// Fetching required etcd config
+	value, err := confHandler.GetConfig("/" + appName + "/config")
+	if err != nil {
+		glog.Infof("Error while fetching config : %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	s := strings.NewReader(value)
+	err = json.NewDecoder(s).Decode(&r.rdeConfig)
+	if err != nil {
+		glog.Infof("Error while decoding JSON : %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	// Setting host and port of RestExport server
+	r.host = fmt.Sprintf("%v", r.rdeConfig["rest_export_server_host"])
+	r.port = fmt.Sprintf("%v", r.rdeConfig["rest_export_server_port"])
+
+	// Fetching ImageStore config
+	imgStoreConfig := msgbusutil.GetMessageBusConfig("ImageStore", "client", r.devMode, config)
+	r.imgStoreConfig = imgStoreConfig
+
+	// Getting required certs from etcd
+	if !r.devMode {
+
+		rdeCerts := []string{rdeCertPath, rdeKeyPath}
+		rdeExportKeys := []string{"/RestDataExport/server_cert", "/RestDataExport/server_key"}
+
+		i := 0
+		for _, rdeExportKey := range rdeExportKeys {
+			rdeCertFile, err := confHandler.GetConfig(rdeExportKey)
+			if err != nil {
+				glog.Errorf("Error : %s", err)
+			}
+			certFile := []byte(rdeCertFile)
+			err = ioutil.WriteFile(rdeCerts[i], certFile, 0644)
+			i++
+		}
+
+		// Fetching and storing required CA certs
+		serverCaPath := fmt.Sprintf("%v", r.rdeConfig["http_server_ca"])
+
+		caCert, err := ioutil.ReadFile(serverCaPath)
+		if err != nil {
+			glog.Errorf("Error : %s", err)
+		}
+
+		rdeCaFile, err := confHandler.GetConfig("/RestDataExport/ca_cert")
+		if err != nil {
+			glog.Errorf("Error : %s", err)
+		}
+		caFile := []byte(rdeCaFile)
+
+		// Adding RDE and server CA to certificate pool
+		extCaCertPool := x509.NewCertPool()
+		extCaCertPool.AppendCertsFromPEM(caCert)
+
+		rdeCaCertPool := x509.NewCertPool()
+		rdeCaCertPool.AppendCertsFromPEM(caFile)
+
+		r.rdeCaCertPool = rdeCaCertPool
+		r.extCaCertPool = extCaCertPool
+
+		// Read the key pair to create certificate struct
+		certFile, err := confHandler.GetConfig("/RestDataExport/server_cert")
+		if err != nil {
+			glog.Errorf("Error : %s", err)
+		}
+		rdeCertFile := []byte(certFile)
+
+		keyFile, err := confHandler.GetConfig("/RestDataExport/server_key")
+		if err != nil {
+			glog.Errorf("Error : %s", err)
+		}
+		rdeKeyFile := []byte(keyFile)
+
+		cert, err := tls.X509KeyPair(rdeCertFile, rdeKeyFile)
+		if err != nil {
+			glog.Errorf("Error : %s", err)
+		}
+		r.clientCert = cert
+	}
+
+	// Starting EISMbus subcribers
+	var subTopics []string
+	subTopics = msgbusutil.GetTopics("SUB")
+	for _, subTopicCfg := range subTopics {
+		msgBusConfig := msgbusutil.GetMessageBusConfig(subTopicCfg, "SUB", r.devMode, config)
+		subTopicCfg := strings.Split(subTopicCfg, "/")
+		go r.startEisSubscriber(msgBusConfig, subTopicCfg[1])
+	}
+
+}
+
+// startEisSubscriber is used to start EISMbus subscribers over specified topic
+func (r *restExport) startEisSubscriber(config map[string]interface{}, topic string) {
 
 	client, err := eismsgbus.NewMsgbusClient(config)
 	if err != nil {
@@ -48,14 +176,15 @@ func startEisSubscriber(config map[string]interface{}, topic string, rdeConfig m
 			glog.V(1).Infof("-- Received Message --")
 			// Adding topic to meta-data for easy differentitation in external server
 			msg.Data["topic"] = topic
-			publishMetaData(msg.Data, topic, rdeConfig, devMode)
+			r.publishMetaData(msg.Data, topic)
 		case err := <-subscriber.ErrorChannel:
 			glog.Errorf("Error receiving message: %v\n", err)
 		}
 	}
 }
 
-func publishMetaData(metadata map[string]interface{}, topic string, rdeConfig map[string]interface{}, devMode bool) {
+// publishMetaData is used to send metadata via POST requests to external server
+func (r *restExport) publishMetaData(metadata map[string]interface{}, topic string) {
 
 	// Adding meta-data to http request
 	requestBody, err := json.Marshal(metadata)
@@ -66,14 +195,14 @@ func publishMetaData(metadata map[string]interface{}, topic string, rdeConfig ma
 	// Timeout for every request
 	timeout := time.Duration(10 * time.Second)
 
-	if devMode {
+	if r.devMode {
 
 		client := &http.Client{
 			Timeout: timeout,
 		}
 
 		// Getting endpoint of server
-		endpoint := fmt.Sprintf("%v", rdeConfig[topic])
+		endpoint := fmt.Sprintf("%v", r.rdeConfig[topic])
 
 		// Making a post request to external server
 		r, err := client.Post(endpoint+"/metadata", "application/json", bytes.NewBuffer(requestBody))
@@ -92,41 +221,15 @@ func publishMetaData(metadata map[string]interface{}, topic string, rdeConfig ma
 
 	} else {
 
-		// Getting endpoint and ca of server
-		endpoint := fmt.Sprintf("%v", rdeConfig[topic])
-		serverCaPath := fmt.Sprintf("%v", rdeConfig["http_server_ca"])
-
-		// Read the key pair to create certificate
-		cert, err := tls.LoadX509KeyPair(rdeCertPath, rdeKeyPath)
-		if err != nil {
-			glog.Errorf("Error : %s", err)
-		}
-
-		// Adding server CA to certificate pool
-		caCert, err := ioutil.ReadFile(serverCaPath)
-		if err != nil {
-			glog.Errorf("Error : %s", err)
-		}
-
-		caCertPool := x509.NewCertPool()
-		caCertPool.AppendCertsFromPEM(caCert)
-
-		// Create a CA certificate pool
-		rdeCaCert, err := ioutil.ReadFile(rdeCaPath)
-		if err != nil {
-			glog.Errorf("Error : %s", err)
-		}
-
-		rdeCaCertPool := x509.NewCertPool()
-		rdeCaCertPool.AppendCertsFromPEM(rdeCaCert)
+		// Getting endpoint of server
+		endpoint := fmt.Sprintf("%v", r.rdeConfig[topic])
 
 		// Create a HTTPS client and supply the created CA pool and certificate
 		client := &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
-					RootCAs:      caCertPool,
-					ClientCAs:    rdeCaCertPool,
-					Certificates: []tls.Certificate{cert},
+					RootCAs:      r.extCaCertPool,
+					Certificates: []tls.Certificate{r.clientCert},
 				},
 			},
 			Timeout: timeout,
@@ -152,76 +255,102 @@ func publishMetaData(metadata map[string]interface{}, topic string, rdeConfig ma
 	}
 }
 
-// // restExportServer starts a http server to serve GET requests
-// func restExportServer() {
-// 	http.HandleFunc("/", getImage)
-//  http.ListenAndServe(":8080", nil)
-// }
+// restExportServer starts a http server to serve GET requests
+func (r *restExport) restExportServer() {
 
-// TODO : Implement getImage API
-// // getImage publishes image frame
-// func getImage(w http.ResponseWriter, r *http.Request) {
-// }
+	http.HandleFunc("/image", r.getImage)
+
+	if r.devMode {
+		err := http.ListenAndServe(r.host+":"+r.port, nil)
+		if err != nil {
+			glog.Errorf("%v", err)
+			os.Exit(-1)
+		}
+	} else {
+
+		// Create the TLS Config with the CA pool and enable Client certificate validation
+		tlsConfig := &tls.Config{
+			RootCAs:    r.rdeCaCertPool,
+			ClientCAs:  r.extCaCertPool,
+			ClientAuth: tls.RequireAndVerifyClientCert,
+		}
+		tlsConfig.BuildNameToCertificate()
+
+		// Create a Server instance to listen on port with the TLS config
+		server := &http.Server{
+			Addr:      r.host + ":" + r.port,
+			TLSConfig: tlsConfig,
+		}
+
+		// Listen to HTTPS connections with the server certificate and wait
+		err := server.ListenAndServeTLS(rdeCertPath, rdeKeyPath)
+		if err != nil {
+			glog.Errorf("%v", err)
+			os.Exit(-1)
+		}
+	}
+}
+
+// readImage is used to fetch required image from ImageStore
+func (r *restExport) readImage(imgHandle string) []byte {
+
+	client, err := eismsgbus.NewMsgbusClient(r.imgStoreConfig)
+	if err != nil {
+		glog.Errorf("-- Error initializing message bus context: %v\n", err)
+		return nil
+	}
+	defer client.Close()
+
+	service, err := client.GetService("ImageStore")
+	if err != nil {
+		glog.Errorf("-- Error initializing service requester: %v\n", err)
+		return nil
+	}
+	defer service.Close()
+
+	// Send Read command & get the frame data
+	response := map[string]interface{}{"command": "read", "img_handle": imgHandle}
+	err1 := service.Request(response)
+	if err1 != nil {
+		glog.Errorf("-- Error sending request: %v\n", err1)
+		return nil
+	}
+
+	resp, err := service.ReceiveResponse(-1)
+	if err != nil {
+		glog.Errorf("-- Error receiving response: %v\n", err)
+		glog.Errorf("--Test Failed--\n")
+		return nil
+	}
+
+	return resp.Blob
+}
+
+// getImage publishes image frame via GET request to external server
+func (r *restExport) getImage(w http.ResponseWriter, re *http.Request) {
+	switch re.Method {
+	case "GET":
+		w.WriteHeader(http.StatusOK)
+		imgHandle := strings.Split(re.URL.RawQuery, "=")[1]
+		// Send imgHandle to read from ImageStore
+		frame := r.readImage(imgHandle)
+		glog.Infof("Imghandle %s and md5sum %v", imgHandle, md5.Sum(frame))
+		w.Write(frame)
+	case "POST":
+		fmt.Fprintf(w, "Received a POST request")
+	default:
+		fmt.Fprintf(w, "Sorry, only GET and POST methods are supported.")
+	}
+}
 
 func main() {
 
-	flag.Parse()
-	flag.Set("logtostderr", "true")
-	defer glog.Flush()
+	// initializing constructor
+	r := new(restExport)
+	r.init()
 
-	appName := os.Getenv("AppName")
-	config := util.GetCryptoMap(appName)
-	confHandler := configmgr.Init("etcd", config)
+	// start the Rest Export server to serve images via GET requests
+	go r.restExportServer()
 
-	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
-	flag.Set("v", os.Getenv("GO_VERBOSE"))
-
-	devMode, err := strconv.ParseBool(os.Getenv("DEV_MODE"))
-	if err != nil {
-		glog.Errorf("string to bool conversion error")
-		os.Exit(1)
-	}
-
-	// Fetching required etcd config
-	value, err := confHandler.GetConfig("/" + appName + "/config")
-	if err != nil {
-		glog.Infof("Error while fetching config : %s\n", err.Error())
-		os.Exit(1)
-	}
-
-	s := strings.NewReader(value)
-	var rdeConfig map[string]interface{}
-	err = json.NewDecoder(s).Decode(&rdeConfig)
-	if err != nil {
-		glog.Infof("Error while decoding JSON : %s\n", err.Error())
-		os.Exit(1)
-	}
-
-	// Getting required certs from etcd
-	if !devMode {
-
-		rdeCerts := []string{rdeCertPath, rdeKeyPath, rdeCaPath}
-		rdeExportKeys := []string{"/RestDataExport/server_cert", "/RestDataExport/server_key", "/RestDataExport/ca_cert"}
-
-		i := 0
-		for _, rdeExportKey := range rdeExportKeys {
-			rdeCertFile, err := confHandler.GetConfig(rdeExportKey)
-			if err != nil {
-				glog.Errorf("Error : %s", err)
-			}
-			certFile := []byte(rdeCertFile)
-			err = ioutil.WriteFile(rdeCerts[i], certFile, 0644)
-			i++
-		}
-	}
-
-	// Starting EISMbus subcribers
-	var subTopics []string
-	subTopics = msgbusutil.GetTopics("SUB")
-	for _, subTopicCfg := range subTopics {
-		msgBusConfig := msgbusutil.GetMessageBusConfig(subTopicCfg, "SUB", devMode, config)
-		subTopicCfg := strings.Split(subTopicCfg, "/")
-		go startEisSubscriber(msgBusConfig, subTopicCfg[1], rdeConfig, devMode)
-	}
 	select {}
 }

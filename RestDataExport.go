@@ -2,9 +2,9 @@ package main
 
 import (
 	eismsgbus "EISMessageBus/eismsgbus"
-	configmgr "IEdgeInsights/libs/ConfigManager"
-	util "IEdgeInsights/util"
-	msgbusutil "IEdgeInsights/util/msgbusutil"
+	configmgr "IEdgeInsights/common/libs/ConfigManager"
+	util "IEdgeInsights/common/util"
+	msgbusutil "IEdgeInsights/common/util/msgbusutil"
 	"bytes"
 	"crypto/tls"
 	"crypto/x509"

@@ -17,12 +17,12 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_and_
 	1. Build and Run RestDataExport as container
         ```
         $ cd [repo]/docker_setup
-        $ docker-compose up --build ia_rde
+        $ docker-compose up --build ia_rest_export
        ```
 
 > **NOTE:** For running in PROD mode, please copy the required certs as [cert.pem](./test/cert.pem) and [key.pem](./test/key.pem) files to /opt/intel/eis/ directory.
 
-* To Run test rde test application
+* To Run test rest data export test application
 
         1. Make sure TestServer application is running
         ```

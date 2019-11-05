@@ -113,7 +113,7 @@ func (r *restExport) init() {
 		}
 		caFile := []byte(rdeCaFile)
 
-		// Adding RDE and server CA to certificate pool
+		// Adding Rest Data Export and server CA to certificate pool
 		extCaCertPool := x509.NewCertPool()
 		extCaCertPool.AppendCertsFromPEM(caCert)
 

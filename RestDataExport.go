@@ -193,7 +193,7 @@ func (r *restExport) publishMetaData(metadata map[string]interface{}, topic stri
 	}
 
 	// Timeout for every request
-	timeout := time.Duration(10 * time.Second)
+	timeout := time.Duration(60 * time.Second)
 
 	if r.devMode {
 
@@ -278,8 +278,13 @@ func (r *restExport) restExportServer() {
 
 		// Create a Server instance to listen on port with the TLS config
 		server := &http.Server{
-			Addr:      r.host + ":" + r.port,
-			TLSConfig: tlsConfig,
+			Addr:              r.host + ":" + r.port,
+			ReadTimeout:       60 * time.Second,
+			ReadHeaderTimeout: 60 * time.Second,
+			WriteTimeout:      60 * time.Second,
+			IdleTimeout:       60 * time.Second,
+			MaxHeaderBytes:    1 << 20,
+			TLSConfig:         tlsConfig,
 		}
 
 		// Listen to HTTPS connections with the server certificate and wait

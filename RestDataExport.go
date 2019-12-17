@@ -333,6 +333,9 @@ func (r *restExport) readImage(imgHandle string) []byte {
 
 // getImage publishes image frame via GET request to external server
 func (r *restExport) getImage(w http.ResponseWriter, re *http.Request) {
+	// Setting content type for encoding
+	w.Header().Set("Content-type", "image/jpeg; charset=utf-8")
+
 	switch re.Method {
 	case "GET":
 		w.WriteHeader(http.StatusOK)

@@ -5,7 +5,7 @@ RestDataExport service subscribes to any topic from EISMessageBus and starts pub
 
 ## `Configuration`
 
-For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_and_MsgBus_Endpoint_Configuration](../Etcd_and_MsgBus_Endpoint_Configuration.md).
+For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secrets_and_MsgBus_Endpoint_Configuration](../Etcd_Secrets_and_MsgBus_Endpoint_Configuration.md).
 
 ## `Pre-requisites`
 

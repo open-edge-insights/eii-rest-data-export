@@ -324,7 +324,6 @@ func (r *restExport) readImage(imgHandle string) []byte {
 	resp, err := service.ReceiveResponse(-1)
 	if err != nil {
 		glog.Errorf("-- Error receiving response: %v\n", err)
-		glog.Errorf("--Test Failed--\n")
 		return nil
 	}
 

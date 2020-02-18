@@ -1,0 +1,31 @@
+{
+  "definitions": {},
+  "type": "object",
+  "required": [
+    "http_server_ca",
+    "rest_export_server_host",
+    "rest_export_server_port"
+  ],
+  "properties": {
+    "camera1_stream_results": {
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "camera1_stream": {
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "http_server_ca": {
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "rest_export_server_host": {
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "rest_export_server_port": {
+      "type": "string",
+      "pattern": "^(.*)$"
+    }
+  }
+}

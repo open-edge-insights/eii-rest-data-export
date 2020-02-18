@@ -19,5 +19,7 @@ COPY --from=common ${GO_WORK_DIR}/../EISMessageBus ${GO_WORK_DIR}/../EISMessageB
 
 COPY . ./RestDataExport/
 
+COPY schema.json .
+
 RUN cd RestDataExport && go build RestDataExport.go
 ENTRYPOINT ["./RestDataExport/RestDataExport"]

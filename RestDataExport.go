@@ -64,14 +64,27 @@ func (r *restExport) init() {
 	// Fetching required etcd config
 	value, err := confHandler.GetConfig("/" + appName + "/config")
 	if err != nil {
-		glog.Infof("Error while fetching config : %s\n", err.Error())
+		glog.Errorf("Error while fetching config : %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	// Reading schema json
+	schema, err := ioutil.ReadFile("./schema.json")
+	if err != nil {
+		glog.Errorf("Schema file not found")
+		os.Exit(1)
+	}
+
+	// Validating config json
+	if util.ValidateJSON(string(schema), value) != true {
+		glog.Errorf("Error while validating JSON\n")
 		os.Exit(1)
 	}
 
 	s := strings.NewReader(value)
 	err = json.NewDecoder(s).Decode(&r.rdeConfig)
 	if err != nil {
-		glog.Infof("Error while decoding JSON : %s\n", err.Error())
+		glog.Errorf("Error while decoding JSON : %s\n", err.Error())
 		os.Exit(1)
 	}
 

@@ -28,6 +28,7 @@ type restExport struct {
 	clientCert     tls.Certificate
 	rdeConfig      map[string]interface{}
 	imgStoreConfig map[string]interface{}
+	service        *eismsgbus.ServiceRequester
 	host           string
 	port           string
 	devMode        bool
@@ -151,6 +152,17 @@ func (r *restExport) init() {
 		subTopicCfg := strings.Split(subTopicCfg, "/")
 		go r.startEisSubscriber(msgBusConfig, subTopicCfg[1])
 	}
+
+	client, err := eismsgbus.NewMsgbusClient(r.imgStoreConfig)
+	if err != nil {
+		glog.Errorf("-- Error initializing message bus context: %v\n", err)
+	}
+
+	service, err := client.GetService("ImageStore")
+	if err != nil {
+		glog.Errorf("-- Error initializing service requester: %v\n", err)
+	}
+	r.service = service
 
 }
 
@@ -299,29 +311,15 @@ func (r *restExport) restExportServer() {
 // readImage is used to fetch required image from ImageStore
 func (r *restExport) readImage(imgHandle string) []byte {
 
-	client, err := eismsgbus.NewMsgbusClient(r.imgStoreConfig)
-	if err != nil {
-		glog.Errorf("-- Error initializing message bus context: %v\n", err)
-		return nil
-	}
-	defer client.Close()
-
-	service, err := client.GetService("ImageStore")
-	if err != nil {
-		glog.Errorf("-- Error initializing service requester: %v\n", err)
-		return nil
-	}
-	defer service.Close()
-
 	// Send Read command & get the frame data
 	response := map[string]interface{}{"command": "read", "img_handle": imgHandle}
-	err1 := service.Request(response)
+	err1 := r.service.Request(response)
 	if err1 != nil {
 		glog.Errorf("-- Error sending request: %v\n", err1)
 		return nil
 	}
 
-	resp, err := service.ReceiveResponse(-1)
+	resp, err := r.service.ReceiveResponse(-1)
 	if err != nil {
 		glog.Errorf("-- Error receiving response: %v\n", err)
 		return nil

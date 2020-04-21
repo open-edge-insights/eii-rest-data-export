@@ -4,7 +4,7 @@ import (
 	eismsgbus "EISMessageBus/eismsgbus"
 	configmgr "ConfigManager"
 	util "IEdgeInsights/common/util"
-	msgbusutil "IEdgeInsights/common/util/msgbusutil"
+	envconfig "EnvConfig"
 	"bytes"
 	"crypto/md5"
 	"crypto/tls"
@@ -96,7 +96,7 @@ func (r *restExport) init() {
 	r.port = fmt.Sprintf("%v", r.rdeConfig["rest_export_server_port"])
 
 	// Fetching ImageStore config
-	imgStoreConfig := msgbusutil.GetMessageBusConfig("ImageStore", "client", r.devMode, config)
+	imgStoreConfig := envconfig.GetMessageBusConfig("ImageStore", "client", r.devMode, config)
 	r.imgStoreConfig = imgStoreConfig
 
 	// Getting required certs from etcd
@@ -162,9 +162,9 @@ func (r *restExport) init() {
 
 	// Starting EISMbus subcribers
 	var subTopics []string
-	subTopics = msgbusutil.GetTopics("SUB")
+	subTopics = envconfig.GetTopics("SUB")
 	for _, subTopicCfg := range subTopics {
-		msgBusConfig := msgbusutil.GetMessageBusConfig(subTopicCfg, "SUB", r.devMode, config)
+		msgBusConfig := envconfig.GetMessageBusConfig(subTopicCfg, "SUB", r.devMode, config)
 		subTopicCfg := strings.Split(subTopicCfg, "/")
 		go r.startEisSubscriber(msgBusConfig, subTopicCfg[1])
 	}

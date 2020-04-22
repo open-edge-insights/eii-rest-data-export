@@ -2,7 +2,7 @@ package main
 
 import (
 	eismsgbus "EISMessageBus/eismsgbus"
-	configmgr "IEdgeInsights/common/libs/ConfigManager"
+	configmgr "ConfigManager"
 	util "IEdgeInsights/common/util"
 	msgbusutil "IEdgeInsights/common/util/msgbusutil"
 	"bytes"
@@ -49,6 +49,9 @@ func (r *restExport) init() {
 	appName := os.Getenv("AppName")
 	config := util.GetCryptoMap(appName)
 	confHandler := configmgr.Init("etcd", config)
+	if confHandler == nil {
+		glog.Fatal("Config Manager Initializtion Failed...")
+	}
 
 	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
 	flag.Set("v", os.Getenv("GO_VERBOSE"))

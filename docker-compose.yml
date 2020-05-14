@@ -10,6 +10,7 @@ services:
       dockerfile: $PWD/../RestDataExport/Dockerfile
       args:
         EIS_VERSION: ${EIS_VERSION}
+        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
     image: ${DOCKER_REGISTRY}ia_rest_export:${EIS_VERSION}
     container_name: ia_rest_export
     hostname: ia_rest_export

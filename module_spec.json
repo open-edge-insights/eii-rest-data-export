@@ -1,0 +1,27 @@
+{
+    "SchemaVersion": "0.2",
+    "Runtime": "docker",
+    "RuntimeOptions": {
+        "ContainerImage": "ia_rest_export:$EIS_VERSION",
+        "TemporaryVolumes": [
+            "$EIS_INSTALL_PATH:$EIS_INSTALL_PATH"
+        ]
+    },
+    "DataStore": {
+        "Protocol": "DIRECT",
+        "DataBuckets": [
+            {
+                "Name": "EIS/RestDataExport",
+                "Permissions": "RO"
+            },
+            {
+                "Name": "EIS/GlobalEnv",
+                "Permissions": "RO"
+            },
+            {
+                "Name": "EIS/Publickeys",
+                "Permissions": "RO"
+            }
+        ]
+    }
+}

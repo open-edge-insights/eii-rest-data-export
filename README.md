@@ -27,3 +27,17 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
        ```
 
 > **NOTE:** For running in PROD mode, please copy the required certs of TestServer [cert.pem](../tools/HttpTestServer/cert.pem) and [key.pem](../tools/HttpTestServer/key.pem) to /opt/intel/eis/ directory.
+
+## `Running in CSL setup`
+
+* Update the config.json file with the following settings:
+
+  ```
+    {
+        "camera1_stream_results": "http://IP Address of Test Server:8082",
+        "point_classifier_results": "http://IP Address of Test Server:8082",
+        "http_server_ca": "/opt/intel/eis/cert.pem",
+        "rest_export_server_host": "0.0.0.0",
+        "rest_export_server_port": "8087"
+    }
+  ```

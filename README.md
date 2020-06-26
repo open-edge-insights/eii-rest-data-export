@@ -13,6 +13,19 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
 
         2. Make sure ImageStore application is running by following [README.md](../ImageStore/README.md)
 
+        3. Make sure the topics you subscribe to are also added in the [config](config.json) with HttpServer endpoint specified
+           Eg: If you are adding a new subscription topic 'dc_point_data_results', the new config will be
+           ```
+                {
+                    "camera1_stream_results": "http://localhost:8082",
+                    "point_classifier_results": "http://localhost:8082",
+                    "dc_point_data_results": "http://localhost:8082",
+                    "http_server_ca": "/opt/intel/eis/cert.pem",
+                    "rest_export_server_host": "localhost",
+                    "rest_export_server_port": "8087"
+                }
+            ```
+
 ## `Installation`
 
 * Follow [provision/README.md](../README#provision-eis.md) for EIS provisioning

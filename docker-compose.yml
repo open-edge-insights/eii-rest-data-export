@@ -56,9 +56,9 @@ services:
       # TPC: zmq_tcp, <publisher_host>:<publisher_port>
       # PubTopics: "cam_serial1_results,cam_serial2_results"
       # OpcuaExportCfg: "opcua,localhost:65003"
-      SubTopics: "VideoAnalytics/camera1_stream_results,VideoIngestion/camera1_stream"
+      SubTopics: "VideoAnalytics/camera1_stream_results,InfluxDBConnector/point_classifier_results"
       camera1_stream_results_cfg: "zmq_tcp,127.0.0.1:65013"
-      camera1_stream_cfg: "zmq_ipc,${SOCKET_DIR}/"
+      point_classifier_results_cfg: "zmq_tcp,127.0.0.1:65016"
     volumes:
       - "${EIS_INSTALL_PATH}/sockets:${SOCKET_DIR}"
       - "${EIS_INSTALL_PATH}:${EIS_INSTALL_PATH}"

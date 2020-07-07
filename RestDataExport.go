@@ -1,10 +1,10 @@
 package main
 
 import (
-	eismsgbus "EISMessageBus/eismsgbus"
 	configmgr "ConfigManager"
-	util "IEdgeInsights/common/util"
+	eismsgbus "EISMessageBus/eismsgbus"
 	envconfig "EnvConfig"
+	util "IEdgeInsights/common/util"
 	"bytes"
 	"crypto/md5"
 	"crypto/tls"
@@ -13,6 +13,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -204,15 +205,15 @@ func (r *restExport) startEisSubscriber(config map[string]interface{}, topic str
 			glog.V(1).Infof("-- Received Message --")
 			// Adding topic to meta-data for easy differentitation in external server
 			msg.Data["topic"] = topic
-			r.publishMetaData(msg.Data, topic)
+			r.postMetaData(msg.Data, topic)
 		case err := <-subscriber.ErrorChannel:
 			glog.Errorf("Error receiving message: %v\n", err)
 		}
 	}
 }
 
-// publishMetaData is used to send metadata via POST requests to external server
-func (r *restExport) publishMetaData(metadata map[string]interface{}, topic string) {
+// postMetaData is used to send metadata via POST requests to external server
+func (r *restExport) postMetaData(metadata map[string]interface{}, topic string) {
 
 	// Adding meta-data to http request
 	requestBody, err := json.Marshal(metadata)
@@ -223,34 +224,53 @@ func (r *restExport) publishMetaData(metadata map[string]interface{}, topic stri
 	// Timeout for every request
 	timeout := time.Duration(60 * time.Second)
 
+	// Getting endpoint of server
+	endpoint := fmt.Sprintf("%v", r.rdeConfig[topic])
+	dialEndpoint := strings.Replace(endpoint, "http://", "", 1)
+	if !r.devMode {
+		// Replace http with https for PROD mode
+		endpoint = strings.Replace(endpoint, "http", "https", 1)
+	}
+
+	// Check if HttpServer is running
+	serverPresent := false
+	for !serverPresent {
+		timeout := 1 * time.Second
+		conn, err := net.DialTimeout("tcp", dialEndpoint, timeout)
+		if err != nil {
+			glog.Errorf("HTTP Server not found, retrying...")
+			time.Sleep(timeout)
+		} else {
+			serverPresent = true
+		}
+		if conn != nil {
+			conn.Close()
+		}
+	}
+
 	if r.devMode {
 
 		client := &http.Client{
 			Timeout: timeout,
 		}
 
-		// Getting endpoint of server
-		endpoint := fmt.Sprintf("%v", r.rdeConfig[topic])
-
 		// Making a post request to external server
 		r, err := client.Post(endpoint+"/metadata", "application/json", bytes.NewBuffer(requestBody))
 		if err != nil {
 			glog.Errorf("Remote HTTP server is not responding : %s", err)
+			return
 		}
 
-		// Read the response body
-		defer r.Body.Close()
-		response, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			glog.Errorf("Failed to receive response from server : %s", err)
+		if r != nil {
+			// Read the response body
+			defer r.Body.Close()
+			response, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				glog.Errorf("Failed to receive response from server : %s", err)
+			}
+			glog.Infof("Response : %s", string(response))
 		}
-
-		glog.Infof("Response : %s", string(response))
-
 	} else {
-
-		// Getting endpoint of server
-		endpoint := fmt.Sprintf("%v", r.rdeConfig[topic])
 
 		// Create a HTTPS client and supply the created CA pool and certificate
 		client := &http.Client{
@@ -263,23 +283,22 @@ func (r *restExport) publishMetaData(metadata map[string]interface{}, topic stri
 			Timeout: timeout,
 		}
 
-		// Replace http with https for PROD mode
-		endpoint = strings.Replace(endpoint, "http", "https", 1)
 		// Making a post request to external server
 		r, err := client.Post(endpoint+"/metadata", "application/json", bytes.NewBuffer(requestBody))
 		if err != nil {
 			glog.Errorf("Remote HTTP server is not responding : %s", err)
+			return
 		}
 
-		// Read the response body
-		defer r.Body.Close()
-		response, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			glog.Errorf("Failed to receive response from server : %s", err)
+		if r != nil {
+			// Read the response body
+			defer r.Body.Close()
+			response, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				glog.Errorf("Failed to receive response from server : %s", err)
+			}
+			glog.Infof("Response : %s", string(response))
 		}
-
-		glog.Infof("Response : %s", string(response))
-
 	}
 }
 

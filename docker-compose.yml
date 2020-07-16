@@ -36,6 +36,7 @@ services:
     hostname: ia_rest_export
     network_mode: host
     restart: unless-stopped
+    read_only: true
     environment:
       AppName: "RestDataExport"
       DEV_MODE: ${DEV_MODE}

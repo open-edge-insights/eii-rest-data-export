@@ -28,16 +28,7 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
 
 ## `Installation`
 
-* Follow [provision/README.md](../README#provision-eis.md) for EIS provisioning
-  if not done already as part of EIS stack setup
-
-* Run RestDataExport
-
-	1. Build and Run RestDataExport as container
-        ```
-        $ cd [repo]/build
-        $ docker-compose up --build ia_rest_export
-       ```
+* Follow steps 1-5 of main [EIS README](../README.md) if not done already as part of EIS stack setup
 
 > **NOTE:** For running in PROD mode, please copy the required certs of TestServer [cert.pem](../tools/HttpTestServer/cert.pem) and [key.pem](../tools/HttpTestServer/key.pem) to /opt/intel/eis/ directory.
 

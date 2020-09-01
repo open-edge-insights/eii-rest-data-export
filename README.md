@@ -32,7 +32,7 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
 
 > **NOTE:** For running in PROD mode, please copy the required certs of TestServer [cert.pem](../tools/HttpTestServer/cert.pem) and [key.pem](../tools/HttpTestServer/key.pem) to /opt/intel/eis/ directory.
 
-## `Running in CSL setup`
+## `Running in CSL or Kubernetes setup`
 
 * Update the config.json file with the following settings:
 

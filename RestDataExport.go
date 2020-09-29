@@ -1,9 +1,9 @@
 package main
 
 import (
-	configmgr "ConfigManager"
+	eiscfgmgr "ConfigMgr/eisconfigmgr"
 	eismsgbus "EISMessageBus/eismsgbus"
-	envconfig "EnvConfig"
+
 	util "IEdgeInsights/common/util"
 	"bytes"
 	"crypto/md5"
@@ -16,7 +16,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -47,30 +46,28 @@ func (r *restExport) init() {
 	flag.Set("logtostderr", "true")
 	defer glog.Flush()
 
-	appName := os.Getenv("AppName")
-	config := util.GetCryptoMap(appName)
-	confHandler := configmgr.Init("etcd", config)
-	if confHandler == nil {
-		glog.Fatal("Config Manager Initializtion Failed...")
+	confHandler, err := eiscfgmgr.ConfigManager()
+	if err != nil {
+		glog.Fatal("Config Manager initialization failed...")
 	}
 
 	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
 	flag.Set("v", os.Getenv("GO_VERBOSE"))
 
 	// Setting devMode
-	devMode, err := strconv.ParseBool(os.Getenv("DEV_MODE"))
+	r.devMode, err = confHandler.IsDevMode()
 	if err != nil {
 		glog.Errorf("string to bool conversion error")
 		os.Exit(1)
 	}
-	r.devMode = devMode
 
 	// Fetching required etcd config
-	value, err := confHandler.GetConfig("/" + appName + "/config")
+	value, err := confHandler.GetAppConfig()
 	if err != nil {
 		glog.Errorf("Error while fetching config : %s\n", err.Error())
 		os.Exit(1)
 	}
+	r.rdeConfig = value
 
 	// Reading schema json
 	schema, err := ioutil.ReadFile("./schema.json")
@@ -79,56 +76,55 @@ func (r *restExport) init() {
 		os.Exit(1)
 	}
 
+	//Convert the App config to a string
+	b, err := json.Marshal(value)
+	if err != nil {
+		glog.Errorf("json Marshalling failed for config")
+		os.Exit(1)
+	}
+	StringifiedValue := string(b)
 	// Validating config json
-	if util.ValidateJSON(string(schema), value) != true {
+	if util.ValidateJSON(string(schema), StringifiedValue) != true {
 		glog.Errorf("Error while validating JSON\n")
 		os.Exit(1)
 	}
 
-	s := strings.NewReader(value)
-	err = json.NewDecoder(s).Decode(&r.rdeConfig)
-	if err != nil {
-		glog.Errorf("Error while decoding JSON : %s\n", err.Error())
-		os.Exit(1)
-	}
-
-	// Setting host and port of RestExport server
-	r.host = fmt.Sprintf("%v", r.rdeConfig["rest_export_server_host"])
-	r.port = fmt.Sprintf("%v", r.rdeConfig["rest_export_server_port"])
+	r.host = value["rest_export_server_host"].(string)
+	r.port = value["rest_export_server_port"].(string)
 
 	// Fetching ImageStore config
-	imgStoreConfig := envconfig.GetMessageBusConfig("ImageStore", "client", r.devMode, config)
+	clntContext, _ := confHandler.GetClientByIndex(0)
+	imgStoreConfig, _ := clntContext.GetMsgbusConfig()
+	appInterface, _ := clntContext.GetInterfaceValue("Name")
+	serviceName, err := appInterface.GetString()
+	if err != nil {
+		glog.Errorf("Error to GetString value %v\n", err)
+	}
+
 	r.imgStoreConfig = imgStoreConfig
 
 	// Getting required certs from etcd
 	if !r.devMode {
-
 		rdeCerts := []string{rdeCertPath, rdeKeyPath}
-		rdeExportKeys := []string{"/RestDataExport/server_cert", "/RestDataExport/server_key"}
+		rdeExportKeys := []string{"server_cert", "server_key"}
 
 		i := 0
 		for _, rdeExportKey := range rdeExportKeys {
-			rdeCertFile, err := confHandler.GetConfig(rdeExportKey)
-			if err != nil {
-				glog.Errorf("Error : %s", err)
-			}
+			rdeCertFile, _ := value[rdeExportKey].(string)
 			certFile := []byte(rdeCertFile)
 			err = ioutil.WriteFile(rdeCerts[i], certFile, 0644)
 			i++
 		}
 
 		// Fetching and storing required CA certs
-		serverCaPath := fmt.Sprintf("%v", r.rdeConfig["http_server_ca"])
+		serverCaPath := value["http_server_ca"].(string)
 
 		caCert, err := ioutil.ReadFile(serverCaPath)
 		if err != nil {
 			glog.Errorf("Error : %s", err)
 		}
 
-		rdeCaFile, err := confHandler.GetConfig("/RestDataExport/ca_cert")
-		if err != nil {
-			glog.Errorf("Error : %s", err)
-		}
+		rdeCaFile, _ := value["ca_cert"].(string)
 		caFile := []byte(rdeCaFile)
 
 		// Adding Rest Data Export and server CA to certificate pool
@@ -142,16 +138,10 @@ func (r *restExport) init() {
 		r.extCaCertPool = extCaCertPool
 
 		// Read the key pair to create certificate struct
-		certFile, err := confHandler.GetConfig("/RestDataExport/server_cert")
-		if err != nil {
-			glog.Errorf("Error : %s", err)
-		}
+		certFile, _ := value["server_cert"].(string)
 		rdeCertFile := []byte(certFile)
 
-		keyFile, err := confHandler.GetConfig("/RestDataExport/server_key")
-		if err != nil {
-			glog.Errorf("Error : %s", err)
-		}
+		keyFile, _ := value["server_key"].(string)
 		rdeKeyFile := []byte(keyFile)
 
 		cert, err := tls.X509KeyPair(rdeCertFile, rdeKeyFile)
@@ -161,21 +151,23 @@ func (r *restExport) init() {
 		r.clientCert = cert
 	}
 
-	// Starting EISMbus subcribers
-	var subTopics []string
-	subTopics = envconfig.GetTopics("SUB")
-	for _, subTopicCfg := range subTopics {
-		msgBusConfig := envconfig.GetMessageBusConfig(subTopicCfg, "SUB", r.devMode, config)
-		subTopicCfg := strings.Split(subTopicCfg, "/")
-		go r.startEisSubscriber(msgBusConfig, subTopicCfg[1])
+	numOfSubscriber, _ := confHandler.GetNumSubscribers()
+	for i := 0; i < numOfSubscriber; i++ {
+		subctx, _ := confHandler.GetSubscriberByIndex(i)
+		subTopics := subctx.GetTopics()
+		config, err := subctx.GetMsgbusConfig()
+		if err != nil {
+			glog.Errorf("-- Error getting message bug config: %v\n", err)
+		}
+		go r.startEisSubscriber(config, subTopics[0])
 	}
 
 	client, err := eismsgbus.NewMsgbusClient(r.imgStoreConfig)
+	glog.Errorf("r.imagestoreconfig : %v ", r.imgStoreConfig)
 	if err != nil {
 		glog.Errorf("-- Error initializing message bus context: %v\n", err)
 	}
-
-	service, err := client.GetService("ImageStore")
+	service, err := client.GetService(serviceName)
 	if err != nil {
 		glog.Errorf("-- Error initializing service requester: %v\n", err)
 	}

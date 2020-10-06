@@ -53,7 +53,7 @@ spec:
     spec:
       containers:
       - name: ia-rest-export
-        image: ia_rest_export:${EIS_VERSION}
+        image: ${DOCKER_REGISTRY}ia_rest_export:${EIS_VERSION}
         securityContext:
           privileged: true
         volumeMounts:

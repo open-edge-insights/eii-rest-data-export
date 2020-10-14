@@ -117,12 +117,8 @@ func (r *restExport) init() {
 		}
 
 		// Fetching and storing required CA certs
-		serverCaPath := value["http_server_ca"].(string)
-
-		caCert, err := ioutil.ReadFile(serverCaPath)
-		if err != nil {
-			glog.Errorf("Error : %s", err)
-		}
+		serverCa := value["http_server_ca"].(string)
+		caCert := []byte(serverCa)
 
 		rdeCaFile, _ := value["ca_cert"].(string)
 		caFile := []byte(rdeCaFile)

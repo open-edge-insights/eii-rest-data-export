@@ -9,11 +9,29 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
 
 ## `Pre-requisites`
 
-        1. Make sure TestServer application is running by following [README.md](../tools/HttpTestServer/README.md)
+        1. Run the below one-time command to install python etcd3:
+          ```
+           $ pip3 install -r requirements.txt
+          ```
 
-        2. Make sure ImageStore application is running by following [README.md](../ImageStore/README.md)
+        2. Make sure TestServer application is running by following [README.md](../tools/HttpTestServer/README.md)
 
-        3. Make sure the topics you subscribe to are also added in the [config](config.json) with HttpServer endpoint specified
+        3. Make sure ImageStore application is running by following [README.md](../ImageStore/README.md)
+
+        4. RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd which can be used to insert the required HttpServer ca cert into the config of RestDataExport before running it. The below commands should be run for running the tool which is a pre-requisite before starting RestDataExport:
+           ```
+           $ set -a && \
+             source ../build/.env && \
+             set +a
+
+           $ sudo chmod -R 777 ../build/provision/Certificates/
+
+           $ python3 etcd_update.py --http_cert <path to ca cert of HttpServer> --ca_cert <path to etcd client ca cert> --cert <path to etcd client cert> --key <path to etcd client key>
+
+           Eg: python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/provision/Certificates/ca/ca_certificate.pem" --cert "../build/provision/Certificates/root/root_client_certificate.pem" --key "../build/provision/Certificates/root/root_client_key.pem"
+           ```
+
+        5. Make sure the topics you subscribe to are also added in the [config](config.json) with HttpServer endpoint specified
            Eg: If you are adding a new subscription topic 'dc_point_data_results', the new config will be
            ```
                 {
@@ -30,7 +48,7 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
 
 * Follow steps 1-5 of main [EIS README](../README.md) if not done already as part of EIS stack setup
 
-> **NOTE:** For running in PROD mode, please copy the required certs of TestServer [cert.pem](../tools/HttpTestServer/cert.pem) and [key.pem](../tools/HttpTestServer/key.pem) to /opt/intel/eis/ directory.
+> **NOTE:** For running in PROD mode, please ensure Step 3 of Pre-requisites is executed before trying to bring up RestDataExport container.
 
 ## `Running in CSL or Kubernetes setup`
 

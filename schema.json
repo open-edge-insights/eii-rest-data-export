@@ -16,8 +16,7 @@
       "pattern": "^(.*)$"
     },
     "http_server_ca": {
-      "type": "string",
-      "pattern": "^(.*)$"
+      "type": "string"
     },
     "rest_export_server_host": {
       "type": "string",

@@ -19,18 +19,15 @@
                 "ETCD_PREFIX": "$ETCD_PREFIX",
                 "DEV_MODE": "$DEV_MODE",
                 "PROFILING_MODE": "false",
-                "ZMQ_RECV_HWM": "50",
-		"RequestEP": "ImageStore",
-		"ImageStore_cfg": "zmq_tcp,${ep.imsServer.remoteaddress}:${ep.imsServer.remoteport}",
-		"SubTopics": "VideoAnalytics/camera1_stream_results,InfluxDBConnector/point_classifier_results",
-                "camera1_stream_results_cfg": "zmq_tcp,${ep.va-input.remoteaddress}:${ep.va-input.remoteport}",
-                "point_classifier_results_cfg": "zmq_tcp,${ep.pointClsInput.remoteaddress}:${ep.pointClsInput.remoteport}"
+                "CLIENT_ImageStore_ENDPOINT": "${ep.imsServer.remoteaddress}:${ep.imsServer.remoteport}",
+                "SUBSCRIBER_default_ENDPOINT": "${ep.va-input.remoteaddress}:${ep.va-input.remoteport}",
+                "SUBSCRIBER_influxSub_ENDPOINT": "${ep.pointClsInput.remoteaddress}:${ep.pointClsInput.remoteport}"
             },
             "Endpoints": [
                 {
                     "Name": "va-input",
                     "Endtype": "client",
-		    "DataType": "messages"
+		            "DataType": "messages"
                 },
                 {
                     "Name": "imsServer",

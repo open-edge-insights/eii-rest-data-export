@@ -91,16 +91,12 @@ spec:
           value: "/run/secrets/etcd_RestDataExport_cert/RestDataExport_client_certificate.pem"
         - name: CONFIGMGR_KEY
           value: "/run/secrets/etcd_RestDataExport_key/RestDataExport_client_key.pem"
-        - name: RequestEP
-          value: "ImageStore"
-        - name: ImageStore_cfg
-          value: "zmq_tcp,imagestore:5669"
-        - name: SubTopics
-          value: "VideoAnalytics/camera1_stream_results,InfluxDBConnector/point_classifier_results"
-        - name: camera1_stream_results_cfg
-          value: "zmq_tcp,videoanalytics:65013"
-        - name: point_classifier_results_cfg
-          value: "zmq_tcp,influxdbconnector:65016"
+        - name: CLIENT_ImageStore_ENDPOINT
+          value: "imagestore:5569"
+        - name: SUBSCRIBER_default_ENDPOINT
+          value: "videoanalytics:65013"
+        - name: SUBSCRIBER_influxSub_ENDPOINT
+          value: "influxdbconnector:65016"
 
       volumes:
       - name: eis-socket

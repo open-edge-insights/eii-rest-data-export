@@ -93,9 +93,24 @@ func (r *restExport) init() {
 	r.port = value["rest_export_server_port"].(string)
 
 	// Fetching ImageStore config
-	clntContext, _ := confHandler.GetClientByIndex(0)
-	imgStoreConfig, _ := clntContext.GetMsgbusConfig()
-	appInterface, _ := clntContext.GetInterfaceValue("Name")
+	clntContext, err := confHandler.GetClientByIndex(0)
+	if err != nil {
+		glog.Errorf("Failed to get client context: %v", err)
+		return
+	}
+
+	imgStoreConfig, err := clntContext.GetMsgbusConfig()
+	if err != nil {
+		glog.Errorf("Failed to fetch msgbus config : %v", err)
+		return
+	}
+
+	appInterface, err := clntContext.GetInterfaceValue("Name")
+	if err != nil {
+		glog.Errorf("Failed to fetch interface value for Name: %v", err)
+		return
+	}
+
 	serviceName, err := appInterface.GetString()
 	if err != nil {
 		glog.Errorf("Error to GetString value %v\n", err)
@@ -150,7 +165,12 @@ func (r *restExport) init() {
 	numOfSubscriber, _ := confHandler.GetNumSubscribers()
 	for i := 0; i < numOfSubscriber; i++ {
 		subctx, _ := confHandler.GetSubscriberByIndex(i)
-		subTopics := subctx.GetTopics()
+		subTopics, err := subctx.GetTopics()
+		if err != nil {
+			glog.Errorf("Failed to fetch topics : %v", err)
+			return
+		}
+
 		config, err := subctx.GetMsgbusConfig()
 		if err != nil {
 			glog.Errorf("-- Error getting message bug config: %v\n", err)

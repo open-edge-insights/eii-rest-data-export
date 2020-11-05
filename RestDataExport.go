@@ -50,6 +50,7 @@ func (r *restExport) init() {
 	if err != nil {
 		glog.Fatal("Config Manager initialization failed...")
 	}
+	defer confHandler.Destroy()
 
 	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
 	flag.Set("v", os.Getenv("GO_VERBOSE"))
@@ -98,6 +99,7 @@ func (r *restExport) init() {
 		glog.Errorf("Failed to get client context: %v", err)
 		return
 	}
+	defer clntContext.Destroy()
 
 	imgStoreConfig, err := clntContext.GetMsgbusConfig()
 	if err != nil {
@@ -164,7 +166,13 @@ func (r *restExport) init() {
 
 	numOfSubscriber, _ := confHandler.GetNumSubscribers()
 	for i := 0; i < numOfSubscriber; i++ {
-		subctx, _ := confHandler.GetSubscriberByIndex(i)
+		subctx, err := confHandler.GetSubscriberByIndex(i)
+		if err != nil {
+			glog.Errorf("Failed to get subscriber context: %v", err)
+			return
+		}
+		defer subctx.Destroy()
+
 		subTopics, err := subctx.GetTopics()
 		if err != nil {
 			glog.Errorf("Failed to fetch topics : %v", err)

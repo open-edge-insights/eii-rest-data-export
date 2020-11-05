@@ -171,7 +171,6 @@ func (r *restExport) init() {
 			glog.Errorf("Failed to get subscriber context: %v", err)
 			return
 		}
-		defer subctx.Destroy()
 
 		subTopics, err := subctx.GetTopics()
 		if err != nil {
@@ -184,6 +183,7 @@ func (r *restExport) init() {
 			glog.Errorf("-- Error getting message bug config: %v\n", err)
 		}
 		go r.startEisSubscriber(config, subTopics[0])
+		subctx.Destroy()
 	}
 
 	client, err := eismsgbus.NewMsgbusClient(r.imgStoreConfig)

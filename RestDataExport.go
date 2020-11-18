@@ -187,7 +187,6 @@ func (r *restExport) init() {
 	}
 
 	client, err := eismsgbus.NewMsgbusClient(r.imgStoreConfig)
-	glog.Errorf("r.imagestoreconfig : %v ", r.imgStoreConfig)
 	if err != nil {
 		glog.Errorf("-- Error initializing message bus context: %v\n", err)
 	}

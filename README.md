@@ -71,21 +71,3 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
         "rest_export_server_port": "8087"
     }
   ```
-
-**Note**:  If Rest Data export is used without ImageStore enabled, then the corresponding links need to be removed from the CSL [app_spec.json](app_spec.json).
-  
-Remove following line from "ExecutionEnv" section of [app_spec.json](app_spec.json):
-
-  ```
-     "CLIENT_ImageStore_ENDPOINT": "${ep.imsServer.remoteaddress}:${ep.imsServer.remoteport}",
-  ```
-and remove the following lines from "Endpoints" section of [app_spec.json](app_spec.json):
-
-  ```
-      {
-        "Name": "imsServer",
-        "Endtype": "client",
-        "DataType": "messages",
-        "Link": "server-is"
-      },
-  ```

@@ -45,6 +45,7 @@ services:
       RequestEP: "ImageStore"
       ImageStore_cfg: "zmq_tcp,127.0.0.1:5669"
       ETCD_HOST: ${ETCD_HOST}
+      ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
       ETCD_PREFIX: ${ETCD_PREFIX}
 
       # MessageBus Endpoint Configuration

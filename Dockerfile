@@ -45,4 +45,7 @@ COPY . ./RestDataExport/
 COPY schema.json .
 
 RUN cd RestDataExport && go build RestDataExport.go
+
+HEALTHCHECK NONE
+
 ENTRYPOINT ["./RestDataExport/RestDataExport"]

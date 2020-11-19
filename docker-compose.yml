@@ -37,6 +37,11 @@ services:
     network_mode: host
     restart: unless-stopped
     ipc: "none"
+    security_opt:
+    - no-new-privileges
+    healthcheck:
+      test: ["CMD-SHELL", "exit", "0"]
+      interval: 5m    
     read_only: true
     environment:
       AppName: "RestDataExport"

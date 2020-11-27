@@ -88,7 +88,7 @@ def main():
     
     # Initializing etcd connection
     etcd_client = None
-    http_ca_cert = None
+    http_ca_cert = ""
     if dev_mode:
         etcd_client = get_etcd_client(None, None, None)
     else:

@@ -16,7 +16,9 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
 
         2. Ensure EIS is provisioned.
 
-        3. RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd which can be used to insert the required HttpServer ca cert into the config of RestDataExport before running it. The below commands should be run for running the tool which is a pre-requisite before starting RestDataExport:
+        3. Make sure TestServer application is running by following [README.md](../tools/HttpTestServer/README.md)
+
+        4. RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd which can be used to insert the required HttpServer ca cert into the config of RestDataExport before running it. The below commands should be run for running the tool which is a pre-requisite before starting RestDataExport:
            ```
            $ set -a && \
              source ../build/.env && \
@@ -34,8 +36,6 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
            # Required if running in DEV mode
            $ python3 etcd_update.py
            ```
-
-        4. Make sure TestServer application is running by following [README.md](../tools/HttpTestServer/README.md)
 
         5. Make sure ImageStore application is running by following [README.md](../ImageStore/README.md)
 

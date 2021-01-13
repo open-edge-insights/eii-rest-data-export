@@ -77,6 +77,7 @@ def get_etcd_client(ca_cert, root_key, root_cert):
                  client instance with error:{}".format(e))
     return etcd
 
+
 def main():
     # Initializing DEV mode variable
     dev_mode = strtobool(os.getenv("DEV_MODE", "false"))
@@ -85,7 +86,7 @@ def main():
 
     # Initializing args
     args = parse_args()
-    
+
     # Initializing etcd connection
     etcd_client = None
     http_ca_cert = ""
@@ -95,9 +96,9 @@ def main():
         if not os.path.isdir("../build/provision/Certificates"):
             print("Please provision EIS before continuing further...")
             os._exit(-1)
-        etcd_client =  get_etcd_client(args.ca_cert,
-                                       args.key,
-                                       args.cert)
+        etcd_client = get_etcd_client(args.ca_cert,
+                                      args.key,
+                                      args.cert)
         if args.http_cert is None:
             print("Please provide HttpServer ca cert path, exiting...")
             os._exit(-1)
@@ -115,7 +116,9 @@ def main():
     # Inserting the config with CA cert to etcd
     try:
         cmd = etcd_client.put(prefix + config_key, bytes(json.dumps(rde_config,
-                                                            indent=4).encode()))
+                                                         indent=4).encode()))
     except Exception as e:
         print("Failed to insert into etcd {}".format(e))
+
+
 main()

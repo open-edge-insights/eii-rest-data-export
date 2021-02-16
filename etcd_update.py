@@ -94,7 +94,7 @@ def main():
         etcd_client = get_etcd_client(None, None, None)
     else:
         if not os.path.isdir("../build/provision/Certificates"):
-            print("Please provision EIS before continuing further...")
+            print("Please provision EII before continuing further...")
             os._exit(-1)
         etcd_client = get_etcd_client(args.ca_cert,
                                       args.key,

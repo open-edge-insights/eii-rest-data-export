@@ -1,6 +1,6 @@
 # `RestDataExport`
 
-RestDataExport service subscribes to any topic from EISMessageBus and starts publishing meta data via POST requests to any external HTTP servers. It has an internal HTTP server running to respond to any GET requests for a required frame from any HTTP clients.
+RestDataExport service subscribes to any topic from EIIMessageBus and starts publishing meta data via POST requests to any external HTTP servers. It has an internal HTTP server running to respond to any GET requests for a required frame from any HTTP clients.
 
 
 ## `Configuration`
@@ -15,7 +15,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
            $ pip3 install -r requirements.txt
           ```
 
-        2. Ensure EIS is provisioned.
+        2. Ensure EII is provisioned.
 
         3. Make sure TestServer application is running by following [README.md](../tools/HttpTestServer/README.md)
 
@@ -47,7 +47,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
                     "camera1_stream_results": "http://localhost:8082",
                     "point_classifier_results": "http://localhost:8082",
                     "dc_point_data_results": "http://localhost:8082",
-                    "http_server_ca": "/opt/intel/eis/cert.pem",
+                    "http_server_ca": "/opt/intel/eii/cert.pem",
                     "rest_export_server_host": "localhost",
                     "rest_export_server_port": "8087"
                 }
@@ -55,7 +55,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
 
 ## `Installation`
 
-* Follow steps 1-5 of main [EIS README](../README.md) if not done already as part of EIS stack setup
+* Follow steps 1-5 of main [EII README](../README.md) if not done already as part of EII stack setup
 
 > **NOTE:** For running in PROD mode, please ensure Step 3 of Pre-requisites is executed before trying to bring up RestDataExport container.
 
@@ -67,7 +67,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
     {
         "camera1_stream_results": "http://IP Address of Test Server:8082",
         "point_classifier_results": "http://IP Address of Test Server:8082",
-        "http_server_ca": "/opt/intel/eis/cert.pem",
+        "http_server_ca": "/opt/intel/eii/cert.pem",
         "rest_export_server_host": "0.0.0.0",
         "rest_export_server_port": "8087"
     }

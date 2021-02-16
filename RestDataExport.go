@@ -1,8 +1,8 @@
 package main
 
 import (
-	eiscfgmgr "ConfigMgr/eisconfigmgr"
-	eismsgbus "EISMessageBus/eismsgbus"
+	eiicfgmgr "ConfigMgr/eiiconfigmgr"
+	eiimsgbus "EIIMessageBus/eiimsgbus"
 
 	util "IEdgeInsights/common/util"
 	"bytes"
@@ -28,15 +28,15 @@ type restExport struct {
 	clientCert     tls.Certificate
 	rdeConfig      map[string]interface{}
 	imgStoreConfig map[string]interface{}
-	service        *eismsgbus.ServiceRequester
+	service        *eiimsgbus.ServiceRequester
 	host           string
 	port           string
 	devMode        bool
 }
 
 const (
-	rdeCertPath = "/opt/intel/eis/rde_server_cert.der"
-	rdeKeyPath  = "/opt/intel/eis/rde_server_key.der"
+	rdeCertPath = "/opt/intel/eii/rde_server_cert.der"
+	rdeKeyPath  = "/opt/intel/eii/rde_server_key.der"
 )
 
 // init is used to initialize and fetch required config
@@ -46,7 +46,7 @@ func (r *restExport) init() {
 	flag.Set("logtostderr", "true")
 	defer glog.Flush()
 
-	confHandler, err := eiscfgmgr.ConfigManager()
+	confHandler, err := eiicfgmgr.ConfigManager()
 	if err != nil {
 		glog.Fatal("Config Manager initialization failed...")
 	}
@@ -182,11 +182,11 @@ func (r *restExport) init() {
 		if err != nil {
 			glog.Errorf("-- Error getting message bug config: %v\n", err)
 		}
-		go r.startEisSubscriber(config, subTopics[0])
+		go r.startEiiSubscriber(config, subTopics[0])
 		subctx.Destroy()
 	}
 
-	client, err := eismsgbus.NewMsgbusClient(r.imgStoreConfig)
+	client, err := eiimsgbus.NewMsgbusClient(r.imgStoreConfig)
 	if err != nil {
 		glog.Errorf("-- Error initializing message bus context: %v\n", err)
 	}
@@ -198,10 +198,10 @@ func (r *restExport) init() {
 
 }
 
-// startEisSubscriber is used to start EISMbus subscribers over specified topic
-func (r *restExport) startEisSubscriber(config map[string]interface{}, topic string) {
+// startEiiSubscriber is used to start EIIMbus subscribers over specified topic
+func (r *restExport) startEiiSubscriber(config map[string]interface{}, topic string) {
 
-	client, err := eismsgbus.NewMsgbusClient(config)
+	client, err := eiimsgbus.NewMsgbusClient(config)
 	if err != nil {
 		glog.Errorf("-- Error initializing message bus context: %v\n", err)
 		return

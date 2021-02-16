@@ -29,9 +29,9 @@ services:
       context: $PWD/../RestDataExport
       dockerfile: $PWD/../RestDataExport/Dockerfile
       args:
-        EIS_VERSION: ${EIS_VERSION}
+        EII_VERSION: ${EII_VERSION}
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
-    image: ${DOCKER_REGISTRY}ia_rest_export:${EIS_VERSION}
+    image: ${DOCKER_REGISTRY}ia_rest_export:${EII_VERSION}
     container_name: ia_rest_export
     hostname: ia_rest_export
     network_mode: host
@@ -46,7 +46,7 @@ services:
     environment:
       AppName: "RestDataExport"
       DEV_MODE: ${DEV_MODE}
-      no_proxy: ${eis_no_proxy},${ETCD_HOST}
+      no_proxy: ${eii_no_proxy},${ETCD_HOST}
       RequestEP: "ImageStore"
       ImageStore_cfg: "zmq_tcp,127.0.0.1:5669"
       ETCD_HOST: ${ETCD_HOST}
@@ -68,9 +68,9 @@ services:
       camera1_stream_results_cfg: "zmq_tcp,127.0.0.1:65013"
       point_classifier_results_cfg: "zmq_tcp,127.0.0.1:65016"
     volumes:
-      - "${EIS_INSTALL_PATH}/sockets:${SOCKET_DIR}"
-      - "${EIS_INSTALL_PATH}:${EIS_INSTALL_PATH}"
-    user: ${EIS_UID}
+      - "${EII_INSTALL_PATH}/sockets:${SOCKET_DIR}"
+      - "${EII_INSTALL_PATH}:${EII_INSTALL_PATH}"
+    user: ${EII_UID}
     secrets:
       - ca_etcd
       - etcd_RestDataExport_cert

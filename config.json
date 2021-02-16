@@ -2,7 +2,7 @@
     "config": {
         "camera1_stream_results": "http://localhost:8082",
         "point_classifier_results": "http://localhost:8082",
-        "http_server_ca": "/opt/intel/eis/cert.pem",
+        "http_server_ca": "/opt/intel/eii/cert.pem",
         "rest_export_server_host": "localhost",
         "rest_export_server_port": "8087"
     },

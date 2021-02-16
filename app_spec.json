@@ -1,0 +1,61 @@
+{
+	"Module": {
+            "Name": "RestExport",
+            "Description": "Rest Data Export module manifest",
+            "SchemaVersion": "0.2",
+            "ManifestFile": "${idx:restexport:$EII_VERSION}",
+            "RunAsUser": "$EII_UID",
+            "RunAsGroup": "$EII_UID",
+            "Resources": {
+                "CPU": 100,
+                "MemoryMB": 100
+            },
+            "ExecutionEnv": {
+                "AppName": "RestDataExport",
+                "ETCD_ENDPOINT": "${datastore.endpoint}",
+                "CONFIGMGR_CACERT": "${databucket.cacert}",
+                "CONFIGMGR_CERT": "${databucket.cert}",
+                "CONFIGMGR_KEY": "${databucket.key}",
+                "ETCD_PREFIX": "$ETCD_PREFIX",
+                "DEV_MODE": "$DEV_MODE",
+                "PROFILING_MODE": "false",
+                "CLIENT_ImageStore_ENDPOINT": "${ep.imsServer.remoteaddress}:${ep.imsServer.remoteport}",
+                "SUBSCRIBER_default_ENDPOINT": "${ep.va-input.remoteaddress}:${ep.va-input.remoteport}",
+                "SUBSCRIBER_influxSub_ENDPOINT": "${ep.pointClsInput.remoteaddress}:${ep.pointClsInput.remoteport}"
+            },
+            "Endpoints": [
+                {
+                    "Name": "va-input",
+                    "Endtype": "client",
+		            "DataType": "messages"
+                },
+                {
+                    "Name": "imsServer",
+                    "Endtype": "client",
+                    "DataType": "messages",
+                    "Link": "server-is"
+                },
+                {
+                    "Name": "rdeServer",
+                    "Endtype": "server",
+                    "Protocol": "TCP",
+                    "Port": "8087",
+                    "DataType": "messages",
+                    "Link": "rdeout"
+                },
+                {
+                    "Name": "pointClsInput",
+                    "Endtype": "client",
+                    "DataType": "messages"
+                }
+            ]	 
+        },
+        "Ingress" : {
+            "Name": "ext-restdataexport",
+            "Protocol": "TCP",
+            "Options": {
+                "Backend": "rdeout",
+                "Port": "31509"
+            }
+       }
+}

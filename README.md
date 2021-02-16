@@ -59,7 +59,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
 
 > **NOTE:** For running in PROD mode, please ensure Step 3 of Pre-requisites is executed before trying to bring up RestDataExport container.
 
-## `Running in CSL or Kubernetes setup`
+## `Running in Kubernetes setup`
 
 * Update the config.json file with the following settings:
 

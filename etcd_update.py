@@ -42,10 +42,12 @@ def parse_args():
                             help='The cert required for etcd')
     arg_parser.add_argument('-k', '--key', default=None,
                             help='The key cert required for etcd')
+    arg_parser.add_argument('-host','--hostname', default='localhost',
+                            help='Etcd host IP')
     return arg_parser.parse_args()
 
 
-def get_etcd_client(ca_cert, root_key, root_cert):
+def get_etcd_client(hostname, ca_cert, root_key, root_cert):
     """Creates an EtcdCli instance
 
     :param ca_cert: Path of ca_certificate.pem
@@ -57,8 +59,6 @@ def get_etcd_client(ca_cert, root_key, root_cert):
     :return: etcd
     :rtype: etcd3.client()
     """
-    # Fetching ETCD_HOST & ETCD_CLIENT_PORT from env
-    hostname = os.getenv("ETCD_HOST", "localhost")
     # Default to localhost if ETCD_HOST is empty
     if hostname == "":
         hostname = "localhost"
@@ -91,12 +91,12 @@ def main():
     etcd_client = None
     http_ca_cert = ""
     if dev_mode:
-        etcd_client = get_etcd_client(None, None, None)
+        etcd_client = get_etcd_client(args.hostname, None, None, None)
     else:
         if not os.path.isdir("../build/provision/Certificates"):
             print("Please provision EII before continuing further...")
             os._exit(-1)
-        etcd_client = get_etcd_client(args.ca_cert,
+        etcd_client = get_etcd_client(args.hostname, args.ca_cert,
                                       args.key,
                                       args.cert)
         if args.http_cert is None:

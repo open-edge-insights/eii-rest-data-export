@@ -28,11 +28,11 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
            # Required if running in PROD mode only
            $ sudo chmod -R 777 ../build/provision/Certificates/
 
-           $ python3 etcd_update.py --http_cert <path to ca cert of HttpServer> --ca_cert <path to etcd client ca cert> --cert <path to etcd client cert> --key <path to etcd client key>
+           $ python3 etcd_update.py --http_cert <path to ca cert of HttpServer> --ca_cert <path to etcd client ca cert> --cert <path to etcd client cert> --key <path to etcd client key> --hostname <IP address of host system>
 
            Eg:
            # Required if running in PROD mode
-           $ python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/provision/Certificates/ca/ca_certificate.pem" --cert "../build/provision/Certificates/root/root_client_certificate.pem" --key "../build/provision/Certificates/root/root_client_key.pem"
+           $ python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/provision/Certificates/ca/ca_certificate.pem" --cert "../build/provision/Certificates/root/root_client_certificate.pem" --key "../build/provision/Certificates/root/root_client_key.pem" --hostname <IP address of host system>
 
            # Required if running in DEV mode
            $ python3 etcd_update.py
@@ -41,14 +41,14 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
         5. Make sure ImageStore application is running by following [README.md](../ImageStore/README.md)
 
         6. Make sure the topics you subscribe to are also added in the [config](config.json) with HttpServer endpoint specified
-           Eg: If you are adding a new subscription topic 'dc_point_data_results', the new config will be
+          * Update the config.json file with the following settings:
+
            ```
                 {
-                    "camera1_stream_results": "http://localhost:8082",
-                    "point_classifier_results": "http://localhost:8082",
-                    "dc_point_data_results": "http://localhost:8082",
+                    "camera1_stream_results": "http://IP Address of Test Server:8082",
+                    "point_classifier_results": "http://IP Address of Test Server:8082",
                     "http_server_ca": "/opt/intel/eii/cert.pem",
-                    "rest_export_server_host": "localhost",
+                    "rest_export_server_host": "0.0.0.0",
                     "rest_export_server_port": "8087"
                 }
             ```
@@ -58,17 +58,3 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
 * Follow steps 1-5 of main [EII README](../README.md) if not done already as part of EII stack setup
 
 > **NOTE:** For running in PROD mode, please ensure Step 3 of Pre-requisites is executed before trying to bring up RestDataExport container.
-
-## `Running in Kubernetes setup`
-
-* Update the config.json file with the following settings:
-
-  ```
-    {
-        "camera1_stream_results": "http://IP Address of Test Server:8082",
-        "point_classifier_results": "http://IP Address of Test Server:8082",
-        "http_server_ca": "/opt/intel/eii/cert.pem",
-        "rest_export_server_host": "0.0.0.0",
-        "rest_export_server_port": "8087"
-    }
-  ```

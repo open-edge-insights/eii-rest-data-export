@@ -30,6 +30,8 @@ services:
       dockerfile: $PWD/../RestDataExport/Dockerfile
       args:
         EII_VERSION: ${EII_VERSION}
+        EII_UID: ${EII_UID}
+        EII_USER_NAME: ${EII_USER_NAME}
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
         UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
         CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
@@ -72,7 +74,6 @@ services:
     volumes:
       - "${EII_INSTALL_PATH}/sockets:${SOCKET_DIR}"
       - "${EII_INSTALL_PATH}:${EII_INSTALL_PATH}"
-    user: ${EII_UID}
     secrets:
       - ca_etcd
       - etcd_RestDataExport_cert

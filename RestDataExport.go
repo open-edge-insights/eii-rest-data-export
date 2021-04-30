@@ -375,7 +375,7 @@ func (r *restExport) readImage(imgHandle string) []byte {
 		return nil
 	}
 
-	return resp.Blob
+	return resp.Blob[0]
 }
 
 // getImage publishes image frame via GET request to external server

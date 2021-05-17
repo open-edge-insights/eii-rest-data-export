@@ -1,0 +1,7 @@
+config:
+    restdataexport:
+      name: restdataexport
+      int:
+        rdeserverport: 8087
+      ext:
+        rdeserverport: 31509

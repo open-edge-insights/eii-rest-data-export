@@ -58,7 +58,11 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: eii-install-path
+        {{- if eq .Values.config.restdataexport.IPC true}}
+        - name: {{ .Values.volumes.eii_socket.name }}
+          mountPath: {{ .Values.volumes.eii_socket.location }}
+        {{- end }}
+        - name: tmp-ssl
           mountPath: "{{.Values.env.EII_INSTALL_PATH }}"
         {{ if eq .Values.env.dev_mode false}}
         - name: etcd-certs
@@ -76,6 +80,7 @@ spec:
           value: '{{ .Values.config.etcd.client_port }}'
         - name:  ETCD_PREFIX
           value: ''
+        {{- if eq .Values.config.restdataexport.IPC false}}
         {{- if .Values.config.video_analytics }}
         - name: SUBSCRIBER_default_ENDPOINT
           value: "{{ .Values.config.video_analytics.name }}:{{ .Values.config.video_analytics.publish_port }}"
@@ -94,6 +99,20 @@ spec:
         - name: CLIENT_ImageStore_TYPE
           value: "zmq_tcp"
         {{- end }}
+        {{- else }}
+        - name: SUBSCRIBER_default_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: SUBSCRIBER_default_TYPE
+          value: "zmq_ipc"
+        - name: SUBSCRIBER_influxSub_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: SUBSCRIBER_influxSub_TYPE
+          value: "zmq_ipc"
+        - name: CLIENT_ImageStore_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: CLIENT_ImageStore_TYPE
+          value: "zmq_ipc"
+        {{- end }}
         {{ if eq .Values.env.dev_mode false}}
         - name: CONFIGMGR_CACERT
           value: "/run/secrets/etcd/ca_certificate.pem"
@@ -104,9 +123,14 @@ spec:
         {{ end }}
 
       volumes:
-      - name: eii-install-path
-        hostPath:
-          path: "{{.Values.env.EII_INSTALL_PATH }}"
+      {{- if eq .Values.config.restdataexport.IPC true}}
+      - name: {{ .Values.volumes.eii_socket.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.volumes.eii_socket.name }}
+      {{- end }}
+      - name: tmp-ssl
+        emptyDir:
+          medium: Memory
       {{ if eq .Values.env.dev_mode false}}
       - name: etcd-certs
         secret:

@@ -16,17 +16,29 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
 
 ### `Pre-requisites`
 
-  1. Run the below one-time command to install python etcd3
+  1. If using the HttpTestServer, make sure that the server's IP has been added to 'no_proxy/NO_PROXY' vars in:
+
+        - /etc/environment     (Needs restart/relogin)
+        - ./docker-compose.yml (Needs to re-run the 'builder' step)
+
+          ```sh
+            environment:
+              AppName: "RestDataExport"
+              DEV_MODE: ${DEV_MODE}
+              no_proxy: ${ETCD_HOST}, <IP of HttpTestServer>
+          ```
+
+  2. Run the below one-time command to install python etcd3
 
       ```sh
       $ pip3 install -r requirements.txt
       ```
 
-  2. Ensure EII is provisioned.
+  3. Ensure EII is provisioned and built.
 
-  3. Ensure the pre-requisites for starting the TestServer application are enabled by following [README.md](../tools/HttpTestServer/README.md#Pre-requisites-for-running-the-HttpTestServer).
+  4. Ensure the pre-requisites for starting the TestServer application are enabled by following [README.md](../tools/HttpTestServer/README.md#Pre-requisites-for-running-the-HttpTestServer).
 
-  4. RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd which can be used to insert the required HttpServer ca cert into the config of RestDataExport before running it. The below commands should be run for running the tool which is a pre-requisite before starting RestDataExport:
+  5. RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd which can be used to insert the required HttpServer ca cert into the config of RestDataExport before running it. The below commands should be run for running the tool which is a pre-requisite before starting RestDataExport:
 
       ```sh
       $ set -a && \

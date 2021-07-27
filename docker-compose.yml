@@ -49,6 +49,7 @@ services:
       AppName: "RestDataExport"
       DEV_MODE: ${DEV_MODE}
       no_proxy: ${ETCD_HOST}
+      NO_PROXY: ${no_proxy}
       RequestEP: "ImageStore"
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}

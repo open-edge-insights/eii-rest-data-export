@@ -151,7 +151,7 @@ func (r *restExport) init() {
 		for _, rdeExportKey := range rdeExportKeys {
 			rdeCertFile, _ := value[rdeExportKey].(string)
 			certFile := []byte(rdeCertFile)
-			err = ioutil.WriteFile(rdeCerts[i], certFile, 0644)
+			err = ioutil.WriteFile(rdeCerts[i], certFile, 0640)
 			i++
 		}
 

@@ -24,7 +24,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
 
   2. Ensure EII is provisioned.
 
-  3. Make sure TestServer application is running by following [README.md](../tools/HttpTestServer/README.md)
+  3. Ensure the pre-requisites for starting the TestServer application are enabled by following [README.md](../tools/HttpTestServer/README.md#Pre-requisites-for-running-the-HttpTestServer).
 
   4. RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd which can be used to insert the required HttpServer ca cert into the config of RestDataExport before running it. The below commands should be run for running the tool which is a pre-requisite before starting RestDataExport:
 
@@ -49,9 +49,11 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
       $ python3 etcd_update.py
       ```
 
-  5. Make sure ImageStore application is running by following [README.md](../ImageStore/README.md)
+  5. Start the TestServer application by following [README.md](../tools/HttpTestServer/README.md#Starting-HttpTestServer).
 
-  6. Make sure the topics you subscribe to are also added in the [config](config.json) with HttpServer endpoint specified
+  6. Ensure ImageStore application is running by following [README.md](../ImageStore/README.md)
+
+  7. Enure the topics you subscribe to are also added in the [config](config.json) with HttpServer endpoint specified
     * Update the config.json file with the following settings:
 
       ```json

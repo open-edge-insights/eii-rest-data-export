@@ -11,8 +11,8 @@ RestDataExport service subscribes to any topic from EIIMessageBus and starts pub
 
 ## `Configuration`
 
-For more details on Etcd secrets and messagebus endpoint configuration, visit [Etcd_Secrets_Configuration.md](../Etcd_Secrets_Configuration.md) and
-[MessageBus Configuration](../common/libs/ConfigMgr/README.md#interfaces) respectively.
+For more details on Etcd secrets and messagebus endpoint configuration, visit [Etcd_Secrets_Configuration.md](https://github.com/open-edge-insights/eii-core/blob/master/Etcd_Secrets_Configuration.md) and
+[MessageBus Configuration](https://github.com/open-edge-insights/eii-core/blob/master/common/libs/ConfigMgr/README.md#interfaces) respectively.
 
 ### `Pre-requisites`
 
@@ -36,7 +36,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
 
   3. Ensure EII is provisioned and built.
 
-  4. Ensure the pre-requisites for starting the TestServer application are enabled by following [README.md](../tools/HttpTestServer/README.md#Pre-requisites-for-running-the-HttpTestServer).
+  4. Ensure the pre-requisites for starting the TestServer application are enabled by following [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Pre-requisites-for-running-the-HttpTestServer).
 
   5. RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd which can be used to insert the required HttpServer ca cert into the config of RestDataExport before running it. The below commands should be run for running the tool which is a pre-requisite before starting RestDataExport:
 
@@ -61,11 +61,11 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
       $ python3 etcd_update.py
       ```
 
-  5. Start the TestServer application by following [README.md](../tools/HttpTestServer/README.md#Starting-HttpTestServer).
+  6. Start the TestServer application by following [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Starting-HttpTestServer).
 
-  6. Ensure ImageStore application is running by following [README.md](../ImageStore/README.md)
+  7. Ensure ImageStore application is running by following [README.md](https://github.com/open-edge-insights/video-imagestore/blob/master/README.md)
 
-  7. Enure the topics you subscribe to are also added in the [config](config.json) with HttpServer endpoint specified
+  8. Enure the topics you subscribe to are also added in the [config](config.json) with HttpServer endpoint specified
     * Update the config.json file with the following settings:
 
       ```json
@@ -81,7 +81,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
 ## `Service bring up`
 
 Please go through the below sections to have RestDataExport service built and launch it:
-- [../README.md#generate-deployment-and-configuration-files](../README.md#generate-deployment-and-configuration-files)
-- [../README.md#provision](../README.md#provision)
-- [../README.md#build-and-run-eii-videotimeseries-use-cases](../README.md#build-and-run-eii-videotimeseries-use-cases)
+- [../README.md#generate-deployment-and-configuration-files](https://github.com/open-edge-insights/eii-core/blob/master/README.md#generate-deployment-and-configuration-files)
+- [../README.md#provision](https://github.com/open-edge-insights/eii-core/blob/master/README.md#provision)
+- [../README.md#build-and-run-eii-videotimeseries-use-cases](https://github.com/open-edge-insights/eii-core/blob/master/README.md#build-and-run-eii-videotimeseries-use-cases)
 

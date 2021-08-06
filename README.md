@@ -1,20 +1,20 @@
 **Contents**
 
-- [`RestDataExport`](#restdataexport)
-  - [`Configuration`](#configuration)
-    - [`Pre-requisites`](#pre-requisites)
-  - [`Service bring up`](#service-bring-up)
-# `RestDataExport`
+- [RestDataExport](#restdataexport)
+  - [Configuration](#configuration)
+    - [Pre-requisites](#pre-requisites)
+  - [Service bring up](#service-bring-up)
+# RestDataExport
 
 RestDataExport service subscribes to any topic from EIIMessageBus and starts publishing meta data via POST requests to any external HTTP servers. It has an internal HTTP server running to respond to any GET requests for a required frame from any HTTP clients.
 
 
-## `Configuration`
+## Configuration
 
 For more details on Etcd secrets and messagebus endpoint configuration, visit [Etcd_Secrets_Configuration.md](https://github.com/open-edge-insights/eii-core/blob/master/Etcd_Secrets_Configuration.md) and
 [MessageBus Configuration](https://github.com/open-edge-insights/eii-core/blob/master/common/libs/ConfigMgr/README.md#interfaces) respectively.
 
-### `Pre-requisites`
+### Pre-requisites
 
   1. If using the HttpTestServer, make sure that the server's IP has been added to 'no_proxy/NO_PROXY' vars in:
 
@@ -78,7 +78,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
           }
       ```
 
-## `Service bring up`
+## Service bring up
 
 Please go through the below sections to have RestDataExport service built and launch it:
 - [../README.md#generate-deployment-and-configuration-files](https://github.com/open-edge-insights/eii-core/blob/master/README.md#generate-deployment-and-configuration-files)

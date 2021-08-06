@@ -30,11 +30,13 @@ services:
       dockerfile: $PWD/../RestDataExport/Dockerfile
       args:
         EII_VERSION: ${EII_VERSION}
-        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
-    image: ${DOCKER_REGISTRY}ia_rest_export:${EII_VERSION}
+        EII_UID: ${EII_UID}
+        EII_USER_NAME: ${EII_USER_NAME}
+        UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
+        CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_rest_export:${EII_VERSION}
     container_name: ia_rest_export
     hostname: ia_rest_export
-    network_mode: host
     restart: unless-stopped
     ipc: "none"
     security_opt:
@@ -46,9 +48,9 @@ services:
     environment:
       AppName: "RestDataExport"
       DEV_MODE: ${DEV_MODE}
-      no_proxy: ${eii_no_proxy},${ETCD_HOST}
+      no_proxy: ${ETCD_HOST}
+      NO_PROXY: ${no_proxy}
       RequestEP: "ImageStore"
-      ImageStore_cfg: "zmq_tcp,127.0.0.1:5669"
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
       ETCD_PREFIX: ${ETCD_PREFIX}
@@ -56,25 +58,17 @@ services:
       # MessageBus Endpoint Configuration
       CertType: "zmq,pem"
 
-      # Use IPC mode (zmq_ipc) when VideoIngestion, VideoAnalytics and Visualizer
-      # based containers are running on the same host. If they are running on diff
-      # host, please use TCP mode for communication.
-      # Eg: Stream cfg for
-      # IPC: zmq_ipc, <absolute_socket_directory_path>
-      # TPC: zmq_tcp, <publisher_host>:<publisher_port>
-      # PubTopics: "cam_serial1_results,cam_serial2_results"
-      # OpcuaExportCfg: "opcua,localhost:65003"
-      SubTopics: "VideoAnalytics/camera1_stream_results,InfluxDBConnector/point_classifier_results"
-      camera1_stream_results_cfg: "zmq_tcp,127.0.0.1:65013"
-      point_classifier_results_cfg: "zmq_tcp,127.0.0.1:65016"
+    networks:
+      - eii
     volumes:
       - "${EII_INSTALL_PATH}/sockets:${SOCKET_DIR}"
       - "${EII_INSTALL_PATH}:${EII_INSTALL_PATH}"
-    user: ${EII_UID}
     secrets:
       - ca_etcd
       - etcd_RestDataExport_cert
       - etcd_RestDataExport_key
+    ports:
+      - 8087:8087
 
 secrets:
   etcd_RestDataExport_cert:

@@ -99,7 +99,7 @@ spec:
         {{- end }}
         {{- if .Values.config.imagestore }}
         - name: CLIENT_ImageStore_ENDPOINT
-          value: "{{ .Values.config.imagestore.name }}:{{ .Values.config.imagestore.imagestore_port }}"
+          value: "{{ .Values.config.imagestore.name }}:{{ .Values.config.imagestore.server_port }}"
         - name: CLIENT_ImageStore_TYPE
           value: "zmq_tcp"
         {{- end }}

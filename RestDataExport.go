@@ -54,6 +54,7 @@ type restExport struct {
 	host           string
 	port           string
 	devMode        bool
+	metadata       map[string]interface{}
 }
 
 const (
@@ -247,7 +248,10 @@ func (r *restExport) startEiiSubscriber(config map[string]interface{}, topic str
 			glog.V(1).Infof("-- Received Message --")
 			// Adding topic to meta-data for easy differentitation in external server
 			msg.Data["topic"] = topic
-			r.postMetaData(msg.Data, topic)
+			r.metadata = msg.Data
+			if os.Getenv("HTTP_METHOD_FETCH_METADATA") == "POST" {
+				r.postMetaData(msg.Data, topic)
+			}
 		case err := <-subscriber.ErrorChannel:
 			glog.Errorf("Error receiving message: %v\n", err)
 		}
@@ -347,6 +351,7 @@ func (r *restExport) postMetaData(metadata map[string]interface{}, topic string)
 // restExportServer starts a http server to serve GET requests
 func (r *restExport) restExportServer() {
 
+	http.HandleFunc("/metadata", r.getMetaData)
 	http.HandleFunc("/image", r.getImage)
 
 	if r.devMode {
@@ -356,15 +361,6 @@ func (r *restExport) restExportServer() {
 			os.Exit(-1)
 		}
 	} else {
-
-		// Create the TLS Config with the CA pool and enable Client certificate validation
-		tlsConfig := &tls.Config{
-			RootCAs:    r.rdeCaCertPool,
-			ClientCAs:  r.extCaCertPool,
-			ClientAuth: tls.RequireAndVerifyClientCert,
-		}
-		tlsConfig.BuildNameToCertificate()
-
 		// Create a Server instance to listen on port with the TLS config
 		server := &http.Server{
 			Addr:              r.host + ":" + r.port,
@@ -373,7 +369,6 @@ func (r *restExport) restExportServer() {
 			WriteTimeout:      60 * time.Second,
 			IdleTimeout:       60 * time.Second,
 			MaxHeaderBytes:    1 << 20,
-			TLSConfig:         tlsConfig,
 		}
 
 		// Listen to HTTPS connections with the server certificate and wait
@@ -382,6 +377,22 @@ func (r *restExport) restExportServer() {
 			glog.Errorf("%v", err)
 			os.Exit(-1)
 		}
+	}
+}
+
+// getMetaData is used to fetch the subscrubed metadata
+func (r *restExport) getMetaData(w http.ResponseWriter, re *http.Request) {
+	w.Header().Set("Content-type", "text/json")
+	responseData, err := json.Marshal(r.metadata)
+	if err != nil {
+		glog.Errorf("Error marshalling json : %s", err)
+	}
+	switch re.Method {
+	case "GET":
+		w.WriteHeader(http.StatusOK)
+		w.Write(responseData)
+	default:
+		glog.Infof("Only GET supported")
 	}
 }
 
@@ -413,8 +424,11 @@ func (r *restExport) getImage(w http.ResponseWriter, re *http.Request) {
 	switch re.Method {
 	case "GET":
 		w.WriteHeader(http.StatusOK)
-		imgHandle := strings.Split(re.URL.RawQuery, "=")[1]
+		reqEndpoint := strings.Split(re.URL.RawQuery, "=")
+		img := make(map[string]string)
+		img[reqEndpoint[0]] = reqEndpoint[1]
 		// Send imgHandle to read from ImageStore
+		imgHandle := img["img_handle"]
 		frame := r.readImage(imgHandle)
 		glog.Infof("Imghandle %s and md5sum %v", imgHandle, md5.Sum(frame))
 		w.Write(frame)

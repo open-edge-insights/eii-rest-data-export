@@ -2,7 +2,8 @@
 
 - [RestDataExport](#restdataexport)
   - [Configuration](#configuration)
-    - [Pre-requisites](#pre-requisites)
+    - [HTTP Get APIs of RDE](#http-get-api-of-rde)
+    - [Pre-requisites for posting metadata to HTTPServer](#pre-requisites-for-running-Rest-Data-Export-to-Post-on-HTTPServer)
   - [Service bring up](#service-bring-up)
 # RestDataExport
 
@@ -16,9 +17,59 @@ RestDataExport service subscribes to any topic from EIIMessageBus and starts pub
 For more details on Etcd secrets and messagebus endpoint configuration, visit [Etcd_Secrets_Configuration.md](https://github.com/open-edge-insights/eii-core/blob/master/Etcd_Secrets_Configuration.md) and
 [MessageBus Configuration](https://github.com/open-edge-insights/eii-core/blob/master/common/libs/ConfigMgr/README.md#interfaces) respectively.
 
-### Pre-requisites
+## HTTP Get API of RDE
 
-  1. If using the HttpTestServer, make sure that the server's IP has been added to 'no_proxy/NO_PROXY' vars in:
+1. Getting the classifier results metadata
+    ### Request
+
+    `GET /metadata`
+    ```sh
+    $ curl -i -H 'Accept: application/json' http://<machine_ip_address>:8087/metadata
+    ```
+    For Eg:
+    ```sh
+      curl -i -H 'Accept: application/json' http://localhost:8087/metadata
+    ```
+    Output:
+
+    ```sh
+    HTTP/1.1 200 OK
+    Content-Type: text/json
+    Date: Fri, 08 Oct 2021 07:51:07 GMT
+    Content-Length: 175
+    {"channels":3,"defects":[],"encoding_level":95,"encoding_type":"jpeg","frame_number":558,"height":1200,"img_handle":"21af429f85","topic":"camera1_stream_results","width":1920}
+    ```
+
+2. Getting the Image using image handle
+    > **Note**: For `image` API `imagestore` module is mandatory, from the `imagestore` only server fetches the data and return over REST API. Please include `imagestore` as a part of your usecase.
+    ### Request
+
+    `GET /image`
+    ```sh
+    $ curl -i -H 'Accept: image/jpeg' http://<machine_ip_address>:8087/image?img_handle=<imageid>
+    ```
+    For Eg.
+      Storing the Image to Disk using curl along with `img_handle`
+    ```sh
+      curl -i -H 'Accept: application/image' http://localhost:8087/image?img_handle=21af429f85 > img.jpeg
+
+      % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+      Dload  Upload   Total   Spent    Left  Speed
+      100  324k    0  324k    0     0  63.3M      0 --:--:-- --:--:-- --:--:-- 63.3M
+    ```
+    > **Note**: This imageid which you are passing image can be found in the `metadata` API response as a part of metadata
+
+### Pre-requisites for running Rest Data Export to Post on HTTPServer
+  >**Note**: By default RDE will be serving the metadata as `GET` *only* request server.
+  > By Enabling this, you can able to get the metadata using direct `GET` request. Also RDE will post the metadata to a http server
+  Please follow the below steps as a prerequisites.
+
+  1. Update the `RestDataExport/docker-compose.yml` file `HTTP_METHOD_FETCH_METADATA` environment value as follows.
+    ```sh
+    $   HTTP_METHOD_FETCH_METADATA="POST"
+    ```
+
+  2. If using the HttpTestServer, make sure that the server's IP has been added to 'no_proxy/NO_PROXY' vars in:
 
         - /etc/environment     (Needs restart/relogin)
         - ./docker-compose.yml (Needs to re-run the 'builder' step)
@@ -30,17 +81,17 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
               no_proxy: ${ETCD_HOST}, <IP of HttpTestServer>
           ```
 
-  2. Run the below one-time command to install python etcd3
+  3. Run the below one-time command to install python etcd3
 
       ```sh
       $ pip3 install -r requirements.txt
       ```
 
-  3. Ensure EII is provisioned and built.
+  4. Ensure EII is provisioned and built.
 
-  4. Ensure the pre-requisites for starting the TestServer application are enabled by following [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Pre-requisites-for-running-the-HttpTestServer).
+  5. Ensure the pre-requisites for starting the TestServer application are enabled by following [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Pre-requisites-for-running-the-HttpTestServer).
 
-  5. RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd which can be used to insert the required HttpServer ca cert into the config of RestDataExport before running it. The below commands should be run for running the tool which is a pre-requisite before starting RestDataExport:
+  6. RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd which can be used to insert the required HttpServer ca cert into the config of RestDataExport before running it. The below commands should be run for running the tool which is a pre-requisite before starting RestDataExport:
 
       ```sh
       $ set -a && \
@@ -63,11 +114,11 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
       $ python3 etcd_update.py
       ```
 
-  6. Start the TestServer application by following [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Starting-HttpTestServer).
+  7. Start the TestServer application by following [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Starting-HttpTestServer).
 
-  7. Ensure ImageStore application is running by following [README.md](https://github.com/open-edge-insights/video-imagestore/blob/master/README.md)
+  8. Ensure ImageStore application is running by following [README.md](https://github.com/open-edge-insights/video-imagestore/blob/master/README.md)
 
-  8. Enure the topics you subscribe to are also added in the [config](config.json) with HttpServer endpoint specified
+  9. Enure the topics you subscribe to are also added in the [config](config.json) with HttpServer endpoint specified
     * Update the config.json file with the following settings:
 
       ```json

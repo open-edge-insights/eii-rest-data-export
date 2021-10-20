@@ -115,32 +115,47 @@ func (r *restExport) init() {
 	r.host = value["rest_export_server_host"].(string)
 	r.port = value["rest_export_server_port"].(string)
 
-	// Fetching ImageStore config
-	clntContext, err := confHandler.GetClientByIndex(0)
-	if err != nil {
-		glog.Errorf("Failed to get client context: %v", err)
-		return
-	}
-	defer clntContext.Destroy()
+	numOfClients, _ := confHandler.GetNumClients()
+	if numOfClients != -1 {
+		// Fetching ImageStore config
+		clntContext, err := confHandler.GetClientByIndex(0)
+		if err != nil {
+			glog.Errorf("Failed to get client context: %v", err)
+			return
+		}
+		defer clntContext.Destroy()
 
-	imgStoreConfig, err := clntContext.GetMsgbusConfig()
-	if err != nil {
-		glog.Errorf("Failed to fetch msgbus config : %v", err)
-		return
-	}
+		imgStoreConfig, err := clntContext.GetMsgbusConfig()
+		if err != nil {
+			glog.Errorf("Failed to fetch msgbus config : %v", err)
+			return
+		}
 
-	appInterface, err := clntContext.GetInterfaceValue("Name")
-	if err != nil {
-		glog.Errorf("Failed to fetch interface value for Name: %v", err)
-		return
-	}
+		appInterface, err := clntContext.GetInterfaceValue("Name")
+		if err != nil {
+			glog.Errorf("Failed to fetch interface value for Name: %v", err)
+			return
+		}
 
-	serviceName, err := appInterface.GetString()
-	if err != nil {
-		glog.Errorf("Error to GetString value %v\n", err)
-	}
+		serviceName, err := appInterface.GetString()
+		if err != nil {
+			glog.Errorf("Error to GetString value %v\n", err)
+		}
 
-	r.imgStoreConfig = imgStoreConfig
+		r.imgStoreConfig = imgStoreConfig
+
+		client, err := eiimsgbus.NewMsgbusClient(r.imgStoreConfig)
+		if err != nil {
+			glog.Errorf("-- Error initializing message bus context: %v\n", err)
+		}
+		service, err := client.GetService(serviceName)
+		if err != nil {
+			glog.Errorf("-- Error initializing service requester: %v\n", err)
+		}
+		r.service = service
+	} else {
+		glog.Infof("No client instances found, not initializing ImageStore...")
+	}
 
 	// Getting required certs from etcd
 	if !r.devMode {
@@ -151,7 +166,7 @@ func (r *restExport) init() {
 		for _, rdeExportKey := range rdeExportKeys {
 			rdeCertFile, _ := value[rdeExportKey].(string)
 			certFile := []byte(rdeCertFile)
-			err = ioutil.WriteFile(rdeCerts[i], certFile, 0640)
+			err = ioutil.WriteFile(rdeCerts[i], certFile, 0400)
 			i++
 		}
 
@@ -207,16 +222,6 @@ func (r *restExport) init() {
 		go r.startEiiSubscriber(config, subTopics[0])
 		subctx.Destroy()
 	}
-
-	client, err := eiimsgbus.NewMsgbusClient(r.imgStoreConfig)
-	if err != nil {
-		glog.Errorf("-- Error initializing message bus context: %v\n", err)
-	}
-	service, err := client.GetService(serviceName)
-	if err != nil {
-		glog.Errorf("-- Error initializing service requester: %v\n", err)
-	}
-	r.service = service
 
 }
 

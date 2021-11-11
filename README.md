@@ -149,6 +149,6 @@ Following are some of the FAQs of RestDataExport
   2. sudo vi /etc/systemd/system/docker.service.d/https-proxy.conf (update hot-ip)
   3. env | grep proxy
   4. export no_proxy=$no_proxy,<host-ip>
-  5. sudo vi .docker/config.json (update host-ip in no_proxy)
+  5. sudo vi ~/.docker/config.json (update host-ip in no_proxy)
   6. sudo systemctl daemon-reload
   7. sudo systemctl restart docker

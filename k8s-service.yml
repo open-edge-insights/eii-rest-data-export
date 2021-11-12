@@ -92,7 +92,7 @@ spec:
         - name: CONFIGMGR_KEY
           value: "/run/secrets/etcd_RestDataExport_key/RestDataExport_client_key.pem"
         - name: CLIENT_ImageStore_ENDPOINT
-          value: "imagestore:5569"
+          value: "imagestore:5669"
         - name: SUBSCRIBER_default_ENDPOINT
           value: "videoanalytics:65013"
         - name: SUBSCRIBER_influxSub_ENDPOINT

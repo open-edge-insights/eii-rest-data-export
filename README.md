@@ -37,7 +37,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
            $ python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/provision/Certificates/ca/ca_certificate.pem" --cert "../build/provision/Certificates/root/root_client_certificate.pem" --key "../build/provision/Certificates/root/root_client_key.pem" --hostname <IP address of ETCD host system> --port 30008
 
            # Required if running in DEV mode
-           $ python3 etcd_update.py
+           $ python3 etcd_update.py --hostname <IP address of ETCD host system> --port <Port number of ETCD server>
            ```
 
         5. Make sure ImageStore application is running by following [README.md](../ImageStore/README.md)

@@ -22,6 +22,7 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
 1. Getting the classifier results metadata
     ### Request
 
+    For Dev mode:
     `GET /metadata`
     ```sh
     $ curl -i -H 'Accept: application/json' http://<machine_ip_address>:8087/metadata
@@ -30,6 +31,16 @@ For more details on Etcd secrets and messagebus endpoint configuration, visit [E
     ```sh
       curl -i -H 'Accept: application/json' http://localhost:8087/metadata
     ```
+    For Prod mode:
+    `GET /metadata`
+    ```sh
+    $ curl --cacert ../build/provision/Certificates/ca/ca_certificate.pem -i -H 'Accept: application/json' https://<machine_ip_address>:8087/metadata
+    ```
+    For Eg:
+    ```sh
+     $ curl --cacert ../build/provision/Certificates/ca/ca_certificate.pem -i -H 'Accept: application/json' https://localhost:8087/metadata
+    ```
+
     Output:
 
     ```sh

@@ -32,7 +32,7 @@ ARG CMAKE_INSTALL_PREFIX
 ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
-COPY --from=common /eii/common/util/util.go common/util/util.go
+COPY --from=common /eii/common/util/util.go ./RestDataExport/util/util.go
 COPY --from=common ${GOPATH}/src ${GOPATH}/src
 COPY --from=common /eii/common/libs/EIIMessageBus/go/EIIMessageBus $GOPATH/src/EIIMessageBus
 COPY --from=common /eii/common/libs/ConfigMgr/go/ConfigMgr $GOPATH/src/ConfigMgr
@@ -50,7 +50,8 @@ ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOU
 
 ARG ARTIFACTS
 RUN mkdir $ARTIFACTS && \
-    go build -o $ARTIFACTS/RestDataExport RestDataExport/RestDataExport.go
+    cd RestDataExport/ && \
+    GO111MODULE=on go build -o $ARTIFACTS/RestDataExport RestDataExport.go
 
 RUN mv RestDataExport/schema.json $ARTIFACTS
 

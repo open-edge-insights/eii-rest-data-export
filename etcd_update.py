@@ -95,7 +95,7 @@ def main():
     if dev_mode:
         etcd_client = get_etcd_client(args.hostname, args.port, None, None, None)
     else:
-        if not os.path.isdir("../build/provision/Certificates"):
+        if not os.path.isdir("../build/Certificates"):
             print("Please provision EII before continuing further...")
             os._exit(-1)
         etcd_client = get_etcd_client(args.hostname, args.port, args.ca_cert,

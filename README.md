@@ -121,12 +121,12 @@ Dload  Upload   Total   Spent    Left  Speed
   6. RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd which can be used to insert the required HttpServer ca cert into the config of RestDataExport before running it. The below commands should be run for running the tool which is a pre-requisite before starting RestDataExport:
 
       ```sh
-       set -a && \
+        set -a && \
         source ../build/.env && \
         set +a
 
       # Required if running in PROD mode only
-       sudo chmod -R 777 ../build/provision/Certificates/
+       sudo chmod -R 777 ../build/Certificates/
 
        python3 etcd_update.py --http_cert <path to ca cert of HttpServer> --ca_cert <path to etcd client ca cert> --cert <path to etcd client cert> --key <path to etcd client key> --hostname <IP address of host system> --port <ETCD PORT>
 

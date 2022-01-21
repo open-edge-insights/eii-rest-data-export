@@ -74,9 +74,11 @@ COPY --from=builder $ARTIFACTS .
 ENV EIIUSER ${EII_USER_NAME}
 ENV EIIUID ${EII_UID}
 ENV EII_INSTALL_PATH ${EII_INSTALL_PATH}
-COPY ./entrypoint.sh .
-RUN chmod +x ./entrypoint.sh
-
 ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/app/.local/lib
+
+RUN mkdir -p ${EII_INSTALL_PATH} && chown -R $EIIUID:$EIIUID $EII_INSTALL_PATH
+
+USER ${EII_USER_NAME}
+
 HEALTHCHECK NONE
-ENTRYPOINT ["./entrypoint.sh","./RestDataExport"]
+ENTRYPOINT ["./RestDataExport"]

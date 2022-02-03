@@ -58,8 +58,8 @@ type restExport struct {
 }
 
 const (
-	rdeCertPath = "/opt/intel/eii/rde_server_cert.der"
-	rdeKeyPath  = "/opt/intel/eii/rde_server_key.der"
+	rdeCertPath = "/opt/intel/eii/rde/rde_server_cert.der"
+	rdeKeyPath  = "/opt/intel/eii/rde/rde_server_key.der"
 )
 
 // init is used to initialize and fetch required config

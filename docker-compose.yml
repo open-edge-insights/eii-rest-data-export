@@ -61,7 +61,7 @@ services:
     volumes:
       - "${EII_INSTALL_PATH}/sockets:${SOCKET_DIR}"
       - "${EII_INSTALL_PATH}:${EII_INSTALL_PATH}"
-      - ./Certificates/RestDataExport:/run/secrets/RestDataExport
-      - ./Certificates/rootca:/run/secrets/rootca
+      - ./Certificates/RestDataExport:/run/secrets/RestDataExport:ro
+      - ./Certificates/rootca/cacert.pem:/run/secrets/rootca/cacert.pem:ro
     ports:
       - 8087:8087

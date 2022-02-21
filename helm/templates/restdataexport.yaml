@@ -67,7 +67,7 @@ spec:
           mountPath: {{ .Values.volumes.eii_socket.location }}
         {{- end }}
         - name: tmp-ssl
-          mountPath: "{{.Values.env.EII_INSTALL_PATH }}"
+          mountPath: "{{.Values.env.EII_INSTALL_PATH }}/rde"
         {{ if eq .Values.env.DEV_MODE false}}
         - name: etcd-certs
           mountPath: /run/secrets/etcd/

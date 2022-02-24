@@ -55,7 +55,7 @@ services:
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
       ETCD_PREFIX: ${ETCD_PREFIX}
-      HTTP_METHOD_FETCH_METADATA: "GET"
+      HTTP_METHOD_FETCH_METADATA:  ${HTTP_METHOD_FETCH_METADATA}
     networks:
       - eii
     volumes:

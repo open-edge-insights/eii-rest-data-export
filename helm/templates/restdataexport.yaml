@@ -78,6 +78,8 @@ spec:
           value: "RestDataExport"
         - name: DEV_MODE
           value: '{{ .Values.env.DEV_MODE }}'
+        - name: HTTP_METHOD_FETCH_METADATA
+          value: '{{ .Values.env.HTTP_METHOD_FETCH_METADATA }}'
         - name: ETCD_HOST
           value: {{ .Values.config.etcd.name }}
         - name: ETCD_CLIENT_PORT

@@ -38,7 +38,7 @@ curl -i -H 'Accept: application/json' http://localhost:8087/metadata
 ```
 
 For Prod mode:
-`GET /metadata1
+`GET /metadata
 
 ```sh
 curl --cacert ../build/Certificates/rootca/cacert.pem -i -H 'Accept: application/json' https://<machine_ip_address>:8087/metadata
@@ -90,11 +90,12 @@ Dload  Upload   Total   Spent    Left  Speed
   > By Enabling this, you can able to get the metadata using direct `GET` request. Also RDE will post the metadata to a http server
   Please follow the below steps as a prerequisites.
 
-  1. Update the `RestDataExport/docker-compose.yml` file `HTTP_METHOD_FETCH_METADATA` environment value as follows.
+  1. Update `EII/build/.env` file `HTTP_METHOD_FETCH_METADATA` environment value as follows.
 
     ```sh
     HTTP_METHOD_FETCH_METADATA="POST"
     ```
+    >**Note**: Make sure post changes you have re run builder.py for generating updated deployment yml files.
 
   2. If using the HttpTestServer, make sure that the server's IP has been added to 'no_proxy/NO_PROXY' vars in:
 
@@ -136,10 +137,6 @@ Dload  Upload   Total   Spent    Left  Speed
 
       # Required if running with k8s helm in PROD mode
        python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/helm-eii/eii-deploy/Certificates/ca/ca_certificate.pem" --cert "../build/helm-eii/eii-deploy/Certificates/root/root_client_certificate.pem" --key "../build/helm-eii/eii-deploy/Certificates/root/root_client_key.pem" --hostname <IP address of ETCD host system> --port 32379
-
-      # Required if running in DEV mode
-       python3 etcd_update.py
-      ```
 
   7. Start the TestServer application by following [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Starting-HttpTestServer).
 

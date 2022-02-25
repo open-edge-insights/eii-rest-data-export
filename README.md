@@ -136,7 +136,7 @@ Dload  Upload   Total   Spent    Left  Speed
        python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/Certificates/rootca/cacert.pem" --cert "../build/Certificates/root/root_client_certificate.pem" --key "../build/Certificates/root/root_client_key.pem" --hostname <IP address of host system> --port <ETCD PORT>
 
       # Required if running with k8s helm in PROD mode
-       python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/helm-eii/eii-deploy/Certificates/ca/ca_certificate.pem" --cert "../build/helm-eii/eii-deploy/Certificates/root/root_client_certificate.pem" --key "../build/helm-eii/eii-deploy/Certificates/root/root_client_key.pem" --hostname <IP address of ETCD host system> --port 32379
+       python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/helm-eii/eii-deploy/Certificates/rootca/cacert.pem" --cert "../build/helm-eii/eii-deploy/Certificates/root/root_client_certificate.pem" --key "../build/helm-eii/eii-deploy/Certificates/root/root_client_key.pem" --hostname <Master Node IP address of ETCD host system> --port 32379
 
   7. Start the TestServer application by following [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Starting-HttpTestServer).
 

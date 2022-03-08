@@ -139,7 +139,9 @@ As a prerequisites, complete the following steps:
    ```
 
 4. Build and provision OEI.
+
 5. Ensure the prerequisites for starting the TestServer application are enabled. For more information, refer to the [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Pre-requisites-for-running-the-HttpTestServer).
+
 6. As a prerequisite, before starting RestDataExport service, run the following commands.
   
    > **Note:** RestDataExport is pre-equipped with a python [tool](./etcd_update.py) to insert data into etcd, which can be used to insert the required `HttpServer ca cert` in the config of RestDataExport before running it.
@@ -156,7 +158,7 @@ As a prerequisites, complete the following steps:
   
    Example:
    # Required if running in the PROD mode
-   python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem"   --ca_cert "../build/Certificates/rootca/cacert.pem" --cert "../build/Certificates/root/  root_client_certificate.pem" --key "../build/Certificates/root/root_client_key.pem"   --hostname <IP address of host system> --port <ETCD PORT>
+   python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem"   --ca_cert "../build/Certificates/rootca/cacert.pem" --cert "../build/Certificates/root/root_client_certificate.pem" --key "../build/Certificates/root/root_client_key.pem" --hostname <IP address of host system> --port <ETCD PORT>
   
    # Required if running with k8s helm in the PROD mode
    python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/helm-eii/eii-deploy/Certificates/rootca/cacert.pem" --cert "../build/helm-eii/eii-deploy/Certificates/root/root_client_certificate.pem" --key "../build/helm-eii/eii-deploy/Certificates/root/root_client_key.pem" --hostname <Master Node IP address of ETCD host system> --port 32379
@@ -166,8 +168,11 @@ As a prerequisites, complete the following steps:
    ```
 
 7. Start the TestServer application. For more information, refer to the [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Starting-HttpTestServer).
+
 8. Ensure that the `ImageStore` application is running. For more information refer to the [README.md](https://github.com/open-edge-insights/video-imagestore/blob/master/README.md)
+
 9. Ensure the topics you subscribe to are also added in the [config](config.json) with the `HttpServer endpoint` specified
+
 10. Update the `config.json` file as follows:
 
     ```json

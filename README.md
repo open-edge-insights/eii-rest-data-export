@@ -114,11 +114,12 @@ Dload  Upload   Total   Spent    Left  Speed
   
 As a prerequisites, complete the following steps:
 
-1. In the `RestDataExport/docker-compose.yml` file, update the `HTTP_METHOD_FETCH_METADATA` environment value as follows:
+1. Update `[WORKDIR]/IEdgeInsights/build/.env` file `HTTP_METHOD_FETCH_METADATA` environment value as follows.
 
    ```sh
    HTTP_METHOD_FETCH_METADATA="POST"
    ```
+   >**Note**: Make sure post changes you have re run builder.py for generating updated deployment yml files.
 
 2. If you are using the `HttpTestServer` then ensure that the server's IP address is added to the `no_proxy/NO_PROXY` vars in:
 
@@ -162,10 +163,6 @@ As a prerequisites, complete the following steps:
   
    # Required if running with k8s helm in the PROD mode
    python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/helm-eii/eii-deploy/Certificates/rootca/cacert.pem" --cert "../build/helm-eii/eii-deploy/Certificates/root/root_client_certificate.pem" --key "../build/helm-eii/eii-deploy/Certificates/root/root_client_key.pem" --hostname <Master Node IP address of ETCD host system> --port 32379
-
-   # Required if running in DEV mode
-   python3 etcd_update.py
-   ```
 
 7. Start the TestServer application. For more information, refer to the [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Starting-HttpTestServer).
 

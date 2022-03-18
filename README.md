@@ -9,8 +9,6 @@
     - [Get images using the image handle](#get-images-using-the-image-handle)
       - [Request to get images](#request-to-get-images)
     - [Prerequisites for running RestDataExport to POST on HTTP Servers](#prerequisites-for-running-restdataexport-to-post-on-http-servers)
-  - [Launch RestDataExport service](#launch-restdataexport-service)
-  - [Setting environment proxy settings](#setting-environment-proxy-settings)
 
 > **Note:** In this document, you will find labels of 'Edge Insights for Industrial (EII)' for filenames, paths, code snippets, and so on. Consider the references of EII as Open Edge Insights (OEI). This is due to the product name change of EII as OEI.
 
@@ -119,7 +117,8 @@ As a prerequisites, complete the following steps:
    ```sh
    HTTP_METHOD_FETCH_METADATA="POST"
    ```
-   >**Note**: Make sure post changes you have re run builder.py for generating updated deployment yml files.
+
+   >**Note:** Make sure post changes you have rerun builder.py for generating updated deployment yml files.
 
 2. If you are using the `HttpTestServer` then ensure that the server's IP address is added to the `no_proxy/NO_PROXY` vars in:
 

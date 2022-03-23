@@ -59,8 +59,6 @@ spec:
       - name: ia-rest-export
         image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_rest_export:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          privileged: true
         volumeMounts:
         {{- if eq .Values.config.restdataexport.IPC true}}
         - name: {{ .Values.volumes.eii_socket.name }}

@@ -162,6 +162,7 @@ As a prerequisites, complete the following steps:
   
    # Required if running with k8s helm in the PROD mode
    python3 etcd_update.py --http_cert "../tools/HttpTestServer/certificates/ca_cert.pem" --ca_cert "../build/helm-eii/eii-deploy/Certificates/rootca/cacert.pem" --cert "../build/helm-eii/eii-deploy/Certificates/root/root_client_certificate.pem" --key "../build/helm-eii/eii-deploy/Certificates/root/root_client_key.pem" --hostname <Master Node IP address of ETCD host system> --port 32379
+   ```
 
 7. Start the TestServer application. For more information, refer to the [README.md](https://github.com/open-edge-insights/eii-tools/blob/master/HttpTestServer/README.md#Starting-HttpTestServer).
 

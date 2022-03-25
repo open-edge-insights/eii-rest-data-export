@@ -59,15 +59,13 @@ spec:
       - name: ia-rest-export
         image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_rest_export:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
-        securityContext:
-          privileged: true
         volumeMounts:
         {{- if eq .Values.config.restdataexport.IPC true}}
         - name: {{ .Values.volumes.eii_socket.name }}
           mountPath: {{ .Values.volumes.eii_socket.location }}
         {{- end }}
         - name: tmp-ssl
-          mountPath: "{{.Values.env.EII_INSTALL_PATH }}"
+          mountPath: "{{.Values.env.EII_INSTALL_PATH }}/rde"
         {{ if eq .Values.env.DEV_MODE false}}
         - name: etcd-certs
           mountPath: /run/secrets/etcd/
@@ -78,6 +76,8 @@ spec:
           value: "RestDataExport"
         - name: DEV_MODE
           value: '{{ .Values.env.DEV_MODE }}'
+        - name: HTTP_METHOD_FETCH_METADATA
+          value: '{{ .Values.env.HTTP_METHOD_FETCH_METADATA }}'
         - name: ETCD_HOST
           value: {{ .Values.config.etcd.name }}
         - name: ETCD_CLIENT_PORT
@@ -119,7 +119,7 @@ spec:
         {{- end }}
         {{ if eq .Values.env.DEV_MODE false}}
         - name: CONFIGMGR_CACERT
-          value: "/run/secrets/etcd/ca_certificate.pem"
+          value: "/run/secrets/etcd/cacert.pem"
         - name: CONFIGMGR_CERT
           value: "/run/secrets/etcd/RestDataExport_client_certificate.pem"
         - name: CONFIGMGR_KEY
@@ -140,8 +140,8 @@ spec:
         secret:
           secretName: eii-certs
           items:
-          - key: ca_certificate.pem
-            path: ca_certificate.pem
+          - key: cacert.pem
+            path: cacert.pem
           - key: RestDataExport_client_certificate.pem
             path: RestDataExport_client_certificate.pem
           - key: RestDataExport_client_key.pem

@@ -1,5 +1,6 @@
 {
     "config": {
+	"cert_type": ["zmq", "pem"],
         "camera1_stream_results": "http://<IP Address of Test Server>:8082",
         "point_classifier_results": "http://<IP Address of Test Server>:8082",
         "http_server_ca": "/opt/intel/eii/cert.pem",

@@ -29,28 +29,50 @@ LABEL description="RestDataExport image"
 
 WORKDIR ${GOPATH}/src/IEdgeInsights
 ARG CMAKE_INSTALL_PREFIX
+
+# Install libzmq
+RUN rm -rf deps && \
+    mkdir -p deps && \
+    cd deps && \
+    wget -q --show-progress https://github.com/zeromq/libzmq/releases/download/v4.3.4/zeromq-4.3.4.tar.gz -O zeromq.tar.gz && \
+    tar xf zeromq.tar.gz && \
+    cd zeromq-4.3.4 && \
+    ./configure --prefix=${CMAKE_INSTALL_PREFIX} && \
+    make install
+
+# Install cjson
+RUN rm -rf deps && \
+    mkdir -p deps && \
+    cd deps && \
+    wget -q --show-progress https://github.com/DaveGamble/cJSON/archive/v1.7.12.tar.gz -O cjson.tar.gz && \
+    tar xf cjson.tar.gz && \
+    cd cJSON-1.7.12 && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_PREFIX}/include -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} .. && \
+    make install
+
 ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
-COPY --from=common /eii/common/util/util.go common/util/util.go
+COPY --from=common /eii/common/util/util.go ./RestDataExport/util/util.go
 COPY --from=common ${GOPATH}/src ${GOPATH}/src
 COPY --from=common /eii/common/libs/EIIMessageBus/go/EIIMessageBus $GOPATH/src/EIIMessageBus
 COPY --from=common /eii/common/libs/ConfigMgr/go/ConfigMgr $GOPATH/src/ConfigMgr
 
 COPY . ./RestDataExport/
 
-
 ENV PATH="$PATH:/usr/local/go/bin" \
     PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" \
     LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib"
 
 # These flags are needed for enabling security while compiling and linking with cpuidcheck in golang
-ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -Werror=format-security -fstack-protector-strong -fPIC" \
+ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -Werror=format-security -fstack-protector-strong -fno-strict-overflow -fno-delete-null-pointer-checks -fwrapv -fPIC" \
     CGO_LDFLAGS="$CGO_LDFLAGS -L${CMAKE_INSTALL_PREFIX}/lib -z noexecstack -z relro -z now"
 
 ARG ARTIFACTS
 RUN mkdir $ARTIFACTS && \
-    go build -o $ARTIFACTS/RestDataExport RestDataExport/RestDataExport.go
+    cd RestDataExport/ && \
+    GO111MODULE=on go build -o $ARTIFACTS/RestDataExport RestDataExport.go
 
 RUN mv RestDataExport/schema.json $ARTIFACTS
 
@@ -58,6 +80,7 @@ FROM ubuntu:$UBUNTU_IMAGE_VERSION as runtime
 ARG ARTIFACTS
 ARG EII_UID
 ARG EII_USER_NAME
+ARG EII_INSTALL_PATH
 RUN groupadd $EII_USER_NAME -g $EII_UID && \
     useradd -r -u $EII_UID -g $EII_USER_NAME $EII_USER_NAME
 
@@ -67,8 +90,14 @@ ARG CMAKE_INSTALL_PREFIX
 ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
 COPY --from=builder ${CMAKE_INSTALL_PREFIX}/lib .local/lib
 COPY --from=builder $ARTIFACTS .
-USER $EII_USER_NAME
-
+ENV EIIUSER ${EII_USER_NAME}
+ENV EIIUID ${EII_UID}
+ENV EII_INSTALL_PATH ${EII_INSTALL_PATH}
 ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/app/.local/lib
+
+RUN mkdir -p ${EII_INSTALL_PATH} && chown -R $EIIUID:$EIIUID $EII_INSTALL_PATH
+
+USER ${EII_USER_NAME}
+
 HEALTHCHECK NONE
 ENTRYPOINT ["./RestDataExport"]

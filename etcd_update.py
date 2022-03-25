@@ -42,9 +42,9 @@ def parse_args():
                             help='The cert required for etcd')
     arg_parser.add_argument('-k', '--key', default=None,
                             help='The key cert required for etcd')
-    arg_parser.add_argument('-host','--hostname', default='localhost',
+    arg_parser.add_argument('-host', '--hostname', default='localhost',
                             help='Etcd host IP')
-    arg_parser.add_argument('-port','--port', default='2379',
+    arg_parser.add_argument('-port', '--port', default='2379',
                             help='Etcd host port')
 
     return arg_parser.parse_args()
@@ -93,11 +93,9 @@ def main():
     etcd_client = None
     http_ca_cert = ""
     if dev_mode:
-        etcd_client = get_etcd_client(args.hostname, args.port, None, None, None)
+        etcd_client = get_etcd_client(args.hostname, args.port,
+                                      None, None, None)
     else:
-        if not os.path.isdir("../build/provision/Certificates"):
-            print("Please provision EII before continuing further...")
-            os._exit(-1)
         etcd_client = get_etcd_client(args.hostname, args.port, args.ca_cert,
                                       args.key,
                                       args.cert)
